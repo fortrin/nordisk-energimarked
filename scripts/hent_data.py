@@ -422,6 +422,31 @@ def update_tariffs(now: datetime) -> None:
         row.update({f"t{h:02d}": f"{p[h]:.5f}" for h in range(24)})
         rows.append(row)
         log.append(f"{owner}: '{row['tarif']}' ({row['kode']}) spids {float(row['spidslast_kr']) * 125:.2f} øre inkl. moms")
+    # Diagnose: alle gældende D03-poster for udvalgte netselskaber (DIAG="navn1,navn2")
+    import os
+    diag = [d.strip().lower() for d in os.environ.get("DIAG", "").split(",") if d.strip()]
+    if diag:
+        picked = {r["gln"] for r in rows}
+        missing = sorted({o for (g, o) in by_owner if g not in picked and any(x.get("ChargeType") == "D03" for x in by_owner[(g, o)])})
+        annotate("notice", "Netselskaber uden valgt tarif", "; ".join(missing)[:3900])
+        chunks, cur = [], ""
+        for (gln, owner), lst in sorted(by_owner.items(), key=lambda kv: kv[0][1] or ""):
+            if not any(d in (owner or "").lower() for d in diag):
+                continue
+            for r in sorted(lst, key=lambda x: x.get("ValidFrom") or ""):
+                if r.get("ChargeType") not in ("D03", "D01"):
+                    continue
+                p = hourly_prices(r) or [0.0] * 24
+                line = (f"{owner} | {r.get('ChargeType')} | {r.get('Note')} | {r.get('Description')} | {r.get('ChargeTypeCode')} | "
+                        f"{(r.get('ValidFrom') or '')[:10]}–{(r.get('ValidTo') or '')[:10]} | {r.get('ResolutionDuration')} | "
+                        f"t03 {p[3]:.4f} t10 {p[10]:.4f} t18 {p[18]:.4f}\n")
+                if len(cur) + len(line) > 3800:
+                    chunks.append(cur); cur = ""
+                cur += line
+        if cur:
+            chunks.append(cur)
+        for i, c in enumerate(chunks[:9]):
+            annotate("warning", f"DIAG {i + 1}", c)
     if rows:
         write_csv(DATA / "nettariffer.csv",
                   ["netselskab", "gln", "tarif", "kode", "gyldig_fra", "lavlast_kr", "hoejlast_kr", "spidslast_kr",

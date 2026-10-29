@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: "47 12 * * 1-5"   # man–fre 12:47 UTC = 13:47 dansk vintertid / 14:47 sommertid
   workflow_dispatch:
+    inputs:
+      diag:
+        description: "Diagnose: kommaseparerede netselskabsnavne (valgfri)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -28,6 +33,8 @@ jobs:
 
       - name: Hent spotpriser og tariffer
         id: hent
+        env:
+          DIAG: ${{ github.event.inputs.diag }}
         run: python3 scripts/hent_data.py
 
       - name: Kontrollér datafilerne
