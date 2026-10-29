@@ -991,7 +991,7 @@ details.mo-sources summary { cursor: pointer; }
   };
   dash.draw('net_body', (tb) => {
     tb.replaceChildren();
-    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 100, hoej: N(r.hoejlast_kr) * 100, spids: N(r.spidslast_kr) * 100, eff: N(r.effekt_kr_kw_aar), fra: r.gyldig_fra }));
+    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 100, hoej: N(r.hoejlast_kr) * 100, spids: N(r.spidslast_kr) * 100, eff: N(r.effekt_kr_kw_aar) || null, fra: r.gyldig_fra }));
     const sel = curNet();
     list.sort(sorter(sortState.net)).forEach((x) => {
       const tr = document.createElement('tr'); if (sel && x.r === sel) tr.className = 'mo-top';
