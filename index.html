@@ -99,8 +99,8 @@ details.mo-sources summary { cursor: pointer; }
   <nav class="mo-tabs" role="tablist" aria-label="Sider">
     <button class="mo-tab" id="tab-overblik" role="tab" data-page="overblik" aria-selected="true">Overblik</button>
     <button class="mo-tab" id="tab-priser" role="tab" data-page="priser" aria-selected="false">Elpriser i Norden</button>
-    <button class="mo-tab" id="tab-afgifter" role="tab" data-page="afgifter" aria-selected="false">Afgifter og nettariffer</button>
-    <button class="mo-tab" id="tab-elselskaber" role="tab" data-page="elselskaber" aria-selected="false">Elselskaber</button>
+    <button class="mo-tab" id="tab-afgifter" role="tab" data-page="afgifter" aria-selected="false">Tariffer og afgifter</button>
+    <button class="mo-tab" id="tab-elselskaber" role="tab" data-page="elselskaber" aria-selected="false">Erhvervsberegner</button>
     <button class="mo-tab" id="tab-nyheder" role="tab" data-page="nyheder" aria-selected="false">Nyheder</button>
   </nav>
 
@@ -117,10 +117,10 @@ details.mo-sources summary { cursor: pointer; }
         <span class="mo-big"><span data-draw="spotval" data-area="DK2" data-which="idag">—</span> øre</span>
         <span class="mo-sub">I morgen: <span data-draw="spotval" data-area="DK2" data-which="imorgen" data-unit=" øre">—</span></span>
       </div>
-      <div class="mo-tile" data-source="spot_daglig">
-        <span class="mo-tile-label">DK1 · gennemsnit seneste 30 dage</span>
-        <span class="mo-big"><span data-draw="spotavg" data-area="DK1" data-days="30">—</span> øre</span>
-        <span class="mo-sub">Seneste 365 dage: <span data-draw="spotavg" data-area="DK1" data-days="365" data-unit=" øre">—</span></span>
+      <div class="mo-tile" data-source="spot_profil_maaned">
+        <span class="mo-tile-label">Kontorprofil DK1 · seneste 12 mdr.</span>
+        <span class="mo-big"><span data-draw="profval" data-area="DK1" data-prof="kontor">—</span> øre</span>
+        <span class="mo-sub">Industri 1 skift: <span data-draw="profval" data-area="DK1" data-prof="industri1" data-unit=" øre">—</span> · flad: <span data-draw="profval" data-area="DK1" data-prof="flad" data-unit=" øre">—</span></span>
       </div>
       <div class="mo-tile" data-source="spot_daglig">
         <span class="mo-tile-label">Billigste område i Norden i dag</span>
@@ -215,6 +215,21 @@ details.mo-sources summary { cursor: pointer; }
       <div class="mo-chart" data-draw="ch_hourly" data-source="spot_time"></div>
     </div>
 
+    <div class="mo-card" id="profiler" data-source="spot_profil_maaned">
+      <h3>Profilvægtet spotpris for erhverv · <span data-draw="area_txt">—</span></h3>
+      <p class="mo-note">Spotprisen vægtet efter typiske forbrugsprofiler, øre/kWh ekskl. moms. Profilfaktoren viser profilens pris i forhold til den flade døgnpris – over 1,00 betyder, at profilen bruger strøm i dyre timer. Kontor: hverdage kl. 07–18 fuld last, øvrige hverdagstimer 30 %, weekend 25 %. Butik: man–lør kl. 08–20 og søn kl. 10–17, ellers 30 %. Industri 1 skift: hverdage kl. 06–14, ellers 20 %. Industri 2 skift: hverdage kl. 06–22, ellers 30 %.</p>
+      <div class="mo-controls">
+        <label>Prisområde
+          <select class="mo-p-dkarea" aria-label="Prisområde">
+            <option value="DK1">DK1 Vestdanmark</option>
+            <option value="DK2">DK2 Østdanmark</option>
+          </select>
+        </label>
+      </div>
+      <div class="mo-tablewrap">
+        <table class="mo-table" data-draw="prof_table"></table>
+      </div>
+    </div>
     <div class="mo-card" id="maaneder">
       <h3>Månedsgennemsnit</h3>
       <p class="mo-note">Øre/kWh ekskl. moms. Seneste 13 måneder.</p>
@@ -226,9 +241,18 @@ details.mo-sources summary { cursor: pointer; }
 
   <!-- AFGIFTER -->
   <section class="mo-page" id="afgifter" role="tabpanel" aria-labelledby="tab-afgifter" hidden>
-    <p class="mo-lede">En dansk elregning består af spotprisen, elselskabets tillæg og abonnement, netselskabets tarif (som afhænger af tidspunktet), Energinets tariffer, elafgiften og moms. Elafgiften er midlertidigt sat ned til EU's minimum i 2026 og 2027.</p>
+    <p class="mo-lede">En virksomheds elpris består af spotprisen, elselskabets tillæg og abonnement, netselskabets tarif (som afhænger af kundetype og tidspunkt), Energinets tariffer og elafgiften. Alle beløb på dette dashboard er ekskl. moms. Elafgiften er midlertidigt 0,8 øre/kWh i 2026 og 2027, og momsregistrerede virksomheder kan få godtgjort ned til EU's minimum på <b data-draw="godt_txt">—</b> øre/kWh.</p>
 
     <div class="mo-controls">
+      <label>Kundetype
+        <select class="mo-p-kundetype" aria-label="Kundetype">
+          <option value="C">C – 0,4 kV (mindre virksomheder)</option>
+          <option value="B-lav">B-lav – 0,4 kV ved transformer</option>
+          <option value="B-høj">B-høj – 10 kV</option>
+          <option value="A-lav">A-lav – 10 kV ved 50/10 kV-station</option>
+          <option value="A-høj">A-høj – 50/60 kV</option>
+        </select>
+      </label>
       <label>Netselskab
         <select class="mo-p-net" data-draw="net_sel" data-source="nettariffer" aria-label="Netselskab"></select>
       </label>
@@ -241,11 +265,17 @@ details.mo-sources summary { cursor: pointer; }
       <label>Elselskab (tillæg)
         <select class="mo-p-sup" data-draw="sup_sel" data-source="elselskaber" aria-label="Elselskab"></select>
       </label>
+      <label>Elafgift
+        <select class="mo-p-elafgift" aria-label="Elafgift">
+          <option value="godtgjort">Efter godtgørelse (momsregistreret)</option>
+          <option value="fuld">Fuld sats</option>
+        </select>
+      </label>
     </div>
 
     <div class="mo-card" id="sammensaetning" data-source="spot_time nettariffer afgifter elselskaber">
       <h3>Hvad koster en kWh? · <span data-draw="dagtxt" data-which="time">—</span></h3>
-      <p class="mo-note">Gennemsnit for tidsrummet, øre/kWh inkl. moms. Abonnementer er ikke med.</p>
+      <p class="mo-note">Gennemsnit for tidsrummet, øre/kWh ekskl. moms, for den valgte kundetype og det valgte netselskab. Abonnementer og effektbetaling er ikke med.</p>
       <div class="mo-chart mo-short" data-draw="ch_stack"></div>
       <div class="mo-legend" data-draw="stack_legend"></div>
     </div>
@@ -253,24 +283,26 @@ details.mo-sources summary { cursor: pointer; }
     <div class="mo-grid">
       <div class="mo-card" id="offentlige">
         <h3>Elafgift og Energinets tariffer</h3>
-        <p class="mo-note">Ens for alle danske elkunder.</p>
+        <p class="mo-note">Ens for alle danske elkunder. Øre/kWh ekskl. moms.</p>
         <div class="mo-tablewrap">
           <table class="mo-table">
-            <thead><tr><th>Afgift / tarif</th><th class="num">Øre/kWh ekskl. moms</th><th class="num">Inkl. moms</th><th>Gyldig fra</th></tr></thead>
+            <thead><tr><th>Afgift / tarif</th><th class="num">Øre/kWh</th><th>Gyldig fra</th></tr></thead>
             <tbody data-draw="afg_body" data-source="afgifter"></tbody>
           </table>
         </div>
       </div>
-      <div class="mo-card" id="tidsperioder">
-        <h3>Netselskabernes tidsperioder</h3>
-        <p class="mo-note">De fleste netselskaber bruger samme tre perioder. Vintertariffen gælder oktober–marts og er højest kl. 17–21.</p>
+      <div class="mo-card" id="kundetyper">
+        <h3>Kundetyper og tidsperioder</h3>
+        <p class="mo-note">Kundetypen afhænger af, hvor virksomheden er tilsluttet elnettet. Jo højere spændingsniveau, jo lavere tarif – til gengæld har B-høj og A-kunder ofte effektbetaling pr. kW. De fleste netselskaber bruger lavlast kl. 00–06, højlast kl. 06–17 og 21–24 og spidslast kl. 17–21; vintertariffen gælder oktober–marts.</p>
         <div class="mo-tablewrap">
           <table class="mo-table">
-            <thead><tr><th>Periode</th><th>Tidsrum</th></tr></thead>
+            <thead><tr><th>Kundetype</th><th>Tilslutning</th><th>Typisk virksomhed</th></tr></thead>
             <tbody>
-              <tr><td>Lavlast</td><td>kl. 00–06</td></tr>
-              <tr><td>Højlast</td><td>kl. 06–17 og 21–24</td></tr>
-              <tr><td>Spidslast</td><td>kl. 17–21</td></tr>
+              <tr><td>C</td><td>0,4 kV-nettet</td><td>Kontorer, butikker, mindre værksteder</td></tr>
+              <tr><td>B-lav</td><td>0,4 kV-siden af en 10/0,4 kV-transformer</td><td>Mellemstore virksomheder med egen tilslutning</td></tr>
+              <tr><td>B-høj</td><td>10 kV-nettet</td><td>Større virksomheder med egen transformer</td></tr>
+              <tr><td>A-lav</td><td>10 kV-siden af en 50/10 kV-station</td><td>Store industrivirksomheder</td></tr>
+              <tr><td>A-høj</td><td>50/60 kV-nettet</td><td>Meget store forbrugere</td></tr>
             </tbody>
           </table>
         </div>
@@ -278,8 +310,8 @@ details.mo-sources summary { cursor: pointer; }
     </div>
 
     <div class="mo-card" id="nettariffer">
-      <h3>Nettarif pr. netselskab</h3>
-      <p class="mo-note">Gældende nettarif C (husholdninger og mindre virksomheder), øre/kWh inkl. moms. Hvor netselskabet deler tariffen op (fx regional tarif, rabat eller overliggende net), er posterne lagt sammen – se kolonnen "Poster i Datahub". Overliggende net er medregnet, hvor netselskabet opkræver det som en særskilt post; nogle prissammenligninger udelader den. Netabonnementet er ikke med. Netselskaber uden brugbare priser i Datahub (fx Kimbrer Elnet) vises ikke. Klik på en kolonne for at sortere.</p>
+      <h3>Nettarif pr. netselskab · kundetype <span data-draw="kt_txt">—</span></h3>
+      <p class="mo-note">Gældende nettarif i øre/kWh ekskl. moms. Hvor netselskabet deler tariffen op (regional tarif, rabat eller for C overliggende net), er posterne lagt sammen – se "Poster i Datahub". Effektbetaling er omregnet fra Datahubs døgnpris til kr. pr. kW pr. år og opkræves typisk af et beregnet maksimaleffekttræk. Netabonnement og eventuel rådighedstarif er ikke med. Klik på en kolonne for at sortere.</p>
       <div class="mo-tablewrap">
         <table class="mo-table mo-sortable" data-table="net">
           <thead><tr>
@@ -287,6 +319,7 @@ details.mo-sources summary { cursor: pointer; }
             <th class="num" data-sort="lav"><button type="button">Lavlast</button></th>
             <th class="num" data-sort="hoej"><button type="button">Højlast</button></th>
             <th class="num" data-sort="spids" aria-sort="descending"><button type="button">Spidslast</button></th>
+            <th class="num" data-sort="eff"><button type="button">Effekt kr./kW/år</button></th>
             <th class="mo-hide-narrow" data-sort="fra"><button type="button">Gyldig fra</button></th>
             <th class="mo-hide-narrow">Poster i Datahub</th>
           </tr></thead>
@@ -298,40 +331,104 @@ details.mo-sources summary { cursor: pointer; }
 
   <!-- ELSELSKABER -->
   <section class="mo-page" id="elselskaber" role="tabpanel" aria-labelledby="tab-elselskaber" hidden>
-    <p class="mo-lede">Spotprisen, nettariffen og afgifterne er de samme uanset elselskab. Det, der adskiller selskaberne, er abonnement, tillæg på spotprisen og gebyrer. Tabellen viser hovedproduktet med variabel pris hos 15 af de største elselskaber.</p>
-    <div class="mo-controls mo-calc">
+    <p class="mo-lede">Beregneren anslår en virksomheds årlige elomkostning ud fra forbrug, forbrugsprofil, prisområde, kundetype og netselskab – med spotprisen vægtet efter profilen de seneste 12 måneder. Elselskabernes erhvervspriser er dem, de selv offentliggør for mindre virksomheder; større virksomheder får typisk individuelle tilbud.</p>
+
+    <div class="mo-controls">
       <label>Årligt forbrug (kWh)
-        <input class="mo-p-forbrug" type="number" min="0" step="500" inputmode="numeric" aria-label="Årligt forbrug i kWh">
+        <input class="mo-p-forbrug" type="number" min="0" step="5000" inputmode="numeric" aria-label="Årligt forbrug i kWh" list="forbrug-forslag">
+        <datalist id="forbrug-forslag">
+          <option value="20000"></option><option value="50000"></option><option value="100000"></option>
+          <option value="250000"></option><option value="500000"></option><option value="1000000"></option><option value="2000000"></option>
+        </datalist>
+      </label>
+      <label>Forbrugsprofil
+        <select class="mo-p-profil" aria-label="Forbrugsprofil">
+          <option value="kontor">Kontor</option>
+          <option value="butik">Butik</option>
+          <option value="industri1">Industri, 1 skift</option>
+          <option value="industri2">Industri, 2 skift</option>
+          <option value="flad">Døgndrift / flad</option>
+        </select>
+      </label>
+      <label>Prisområde
+        <select class="mo-p-dkarea" aria-label="Prisområde">
+          <option value="DK1">DK1 Vestdanmark</option>
+          <option value="DK2">DK2 Østdanmark</option>
+        </select>
+      </label>
+      <label>Kundetype
+        <select class="mo-p-kundetype" aria-label="Kundetype">
+          <option value="C">C</option><option value="B-lav">B-lav</option><option value="B-høj">B-høj</option>
+          <option value="A-lav">A-lav</option><option value="A-høj">A-høj</option>
+        </select>
+      </label>
+      <label>Netselskab
+        <select class="mo-p-net" data-draw="net_sel" data-source="nettariffer" aria-label="Netselskab"></select>
+      </label>
+      <label>Elafgift
+        <select class="mo-p-elafgift" aria-label="Elafgift">
+          <option value="godtgjort">Efter godtgørelse</option>
+          <option value="fuld">Fuld sats</option>
+        </select>
       </label>
     </div>
 
-    <div class="mo-card" id="selskabsomkostning" data-source="elselskaber">
-      <h3>Elselskabets del af regningen pr. år ved <span data-draw="forbrug_txt">—</span> kWh</h3>
-      <p class="mo-note">Abonnement × 12 (efter forbrugstrin, hvor selskabet har det) + spottillæg × forbrug + Betalingsservice-gebyr. Spotpris, nettarif, afgifter og moms er ikke med, da de er ens hos alle.</p>
-      <div class="mo-chart" data-draw="ch_suppliers"></div>
+    <div class="mo-card" id="beregner" data-source="elselskaber spot_profil_maaned nettariffer afgifter">
+      <h3>Anslået årlig elomkostning · <span data-draw="calc_title">—</span></h3>
+      <p class="mo-note" data-draw="calc_note">—</p>
+      <div class="mo-chart" data-draw="ch_calc"></div>
+      <div class="mo-tablewrap">
+        <table class="mo-table">
+          <thead><tr>
+            <th>Elselskab · produkt</th>
+            <th class="num">Elpris</th>
+            <th class="num">Tillæg</th>
+            <th class="num">Abonnement</th>
+            <th class="num">Nettarif</th>
+            <th class="num mo-hide-narrow">Effekt</th>
+            <th class="num mo-hide-narrow">Energinet</th>
+            <th class="num mo-hide-narrow">Elafgift</th>
+            <th class="num">I alt kr./år</th>
+            <th class="num">Øre/kWh</th>
+            <th class="mo-wide mo-hide-narrow">Bemærkning</th>
+          </tr></thead>
+          <tbody data-draw="calc_body"></tbody>
+        </table>
+      </div>
+      <p class="mo-note">Elpris for spotprodukter = profilvægtet spotpris de seneste 12 hele måneder × forbrug; for fastprisprodukter den oplyste fastpris. Nettarif og Energinet er vægtet efter profilen med de aktuelle tariffer (vintertariffer i vinterhalvåret overvurderer helårsprisen for C og B-lav). Effektbetaling er anslået ud fra profilens maksimale timeforbrug. Netabonnement, rådighedstarif og selskabsspecifikke gebyrer er ikke med.</p>
     </div>
 
     <div class="mo-card" id="gebyrtabel">
-      <h3>Priser og gebyrer</h3>
-      <p class="mo-note">Alle beløb inkl. moms. Klik på en kolonne for at sortere.</p>
+      <h3>Erhvervsprodukter og gebyrer</h3>
+      <p class="mo-note">Ekskl. moms. Klik på en kolonne for at sortere.</p>
       <div class="mo-tablewrap">
         <table class="mo-table mo-sortable" data-table="sup">
           <thead><tr>
             <th data-sort="selskab"><button type="button">Elselskab</button></th>
             <th data-sort="produkt"><button type="button">Produkt</button></th>
-            <th class="num" data-sort="abo"><button type="button">Abonnement kr./md.</button></th>
-            <th class="num" data-sort="tillaeg"><button type="button">Spottillæg øre/kWh</button></th>
-            <th class="num" data-sort="aar" aria-sort="ascending"><button type="button">Pr. år</button></th>
+            <th data-sort="type"><button type="button">Type</button></th>
+            <th class="num" data-sort="abo" aria-sort="ascending"><button type="button">Abonnement kr./md.</button></th>
+            <th class="num" data-sort="tillaeg"><button type="button">Tillæg øre/kWh</button></th>
+            <th class="num" data-sort="fast"><button type="button">Fastpris DK1 / DK2</button></th>
             <th data-sort="binding"><button type="button">Binding</button></th>
-            <th class="num mo-hide-narrow" data-sort="bs"><button type="button">Betalingsservice</button></th>
-            <th class="num mo-hide-narrow" data-sort="ik"><button type="button">Indbetalingskort</button></th>
-            <th class="mo-wide mo-hide-narrow">Øvrige gebyrer og noter</th>
+            <th class="num mo-hide-narrow" data-sort="maks"><button type="button">Maks. kWh/år</button></th>
+            <th class="mo-wide mo-hide-narrow">Gebyrer og noter</th>
             <th class="mo-hide-narrow">Kilde</th>
           </tr></thead>
           <tbody data-draw="sup_body" data-source="elselskaber"></tbody>
         </table>
       </div>
-      <p class="mo-note">Kilde: primært Strømligning (stromligning.dk), som kontrollerer priserne med selskaberne, suppleret med selskabernes egne sider. "Sidst kontrolleret" vises i kildekolonnen, hvor den er oplyst. Priser kan ændre sig – tjek altid hos selskabet.</p>
+    </div>
+
+    <div class="mo-card" id="tilbud">
+      <h3>Individuelle tilbud</h3>
+      <p class="mo-note">Over disse grænser – og hos selskaber uden offentlige erhvervspriser – forhandles prisen individuelt. Typiske elementer er spotpris plus tillæg, fast pris for hele eller dele af forbruget, prisloft eller porteføljeforvaltning.</p>
+      <div class="mo-tablewrap">
+        <table class="mo-table">
+          <thead><tr><th>Elselskab</th><th>Note</th></tr></thead>
+          <tbody data-draw="tilbud_body" data-source="elselskaber_tilbud"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -356,7 +453,7 @@ details.mo-sources summary { cursor: pointer; }
   </section>
 
   <footer class="mo-sources" id="kilder">
-    Kilder: Energi Data Service (Energinet) for danske spotpriser, nettariffer og afgifter; hvakosterstrommen.no, elprisetjustnu.se og Elering for norske, svenske og finske spotpriser (ENTSO-E-data); Strømligning og selskabernes egne sider for elselskabernes priser. Spotpriser og tariffer opdateres automatisk hver hverdag; nyheder hver hverdag morgen.
+    Kilder: Energi Data Service (Energinet) for danske spotpriser, nettariffer og afgifter; hvakosterstrommen.no, elprisetjustnu.se og Elering for norske, svenske og finske spotpriser (ENTSO-E-data); elselskabernes egne erhvervssider for produkter og gebyrer; Skattestyrelsen for godtgørelse af elafgift. Alle beløb er ekskl. moms. Spotpriser og tariffer opdateres automatisk hver hverdag; nyheder hver hverdag morgen.
   </footer>
   <details class="mo-sources" id="datakilder">
     <summary>Datakilder og opdateringsdatoer</summary>
@@ -590,7 +687,7 @@ details.mo-sources summary { cursor: pointer; }
     const p = P();
     const setVal = (sel, v) => document.querySelectorAll(sel).forEach((el) => { if (el !== document.activeElement && v != null) el.value = String(v); });
     setVal('.mo-p-land', p.land || 'Danmark'); setVal('.mo-p-periode', p.periode || '90');
-    setVal('.mo-p-dkarea', p.dkarea || 'DK1'); setVal('.mo-p-forbrug', p.forbrug ?? 4000);
+    setVal('.mo-p-forbrug', p.forbrug ?? 250000);
   });
 
   // ----- header and tiles -----
@@ -711,11 +808,95 @@ details.mo-sources summary { cursor: pointer; }
     tbl.append(tb);
   });
 
-  // ----- fees and tariffs tab -----
-  const netRows = () => rows('nettariffer') || [];
-  const curNet = () => { const n = netRows(); return n.find((r) => r.netselskab === P().netselskab) || n.find((r) => /radius/i.test(r.netselskab)) || n[0] || null; };
+  // ----- B2B: shared settings -----
+  // EU-minimum for erhverv, som momsregistrerede kan få godtgjort ned til (Skattestyrelsen, 2026–2027)
+  const ELAFGIFT_GODTGJORT_OERE = 0.4;
+  const KT = ['C', 'B-lav', 'B-høj', 'A-lav', 'A-høj'];
+  const kundetype = () => (KT.includes(P().kundetype) ? P().kundetype : 'C');
+  const dkArea = () => (P().dkarea === 'DK1' ? 'DK1' : 'DK2');
+  ctl('.mo-p-kundetype', 'change', (el) => dash.setParams({ kundetype: el.value }));
+  ctl('.mo-p-elafgift', 'change', (el) => dash.setParams({ elafgift: el.value }));
+  ctl('.mo-p-profil', 'change', (el) => dash.setParams({ profil: el.value }));
+  dash.onData(() => {
+    const p = P();
+    const setVal = (sel, v) => document.querySelectorAll(sel).forEach((el) => { if (el !== document.activeElement && v != null) el.value = String(v); });
+    setVal('.mo-p-kundetype', kundetype()); setVal('.mo-p-elafgift', p.elafgift || 'godtgjort'); setVal('.mo-p-profil', p.profil || 'kontor');
+    setVal('.mo-p-dkarea', dkArea());
+  });
+  dash.draw('godt_txt', (el) => { el.textContent = f1(ELAFGIFT_GODTGJORT_OERE); });
+  dash.draw('kt_txt', (el) => { el.textContent = kundetype(); });
+  dash.draw('area_txt', (el) => { el.textContent = dkArea() === 'DK1' ? 'DK1 Vestdanmark' : 'DK2 Østdanmark'; });
+
+  const afgOere = (id) => { const r = (rows('afgifter') || []).find((x) => x.id === id); return r ? N(r.kr_kwh) * 100 : null; };
+  const elafgiftOere = () => {
+    const full = afgOere('elafgift');
+    if (full == null) return null;
+    return P().elafgift === 'fuld' ? full : Math.min(full, ELAFGIFT_GODTGJORT_OERE);
+  };
+
+  // ----- profiles (same definitions as scripts/hent_data.py) -----
+  const PROFILER = { flad: 'Døgndrift / flad', kontor: 'Kontor', butik: 'Butik', industri1: 'Industri, 1 skift', industri2: 'Industri, 2 skift' };
+  const profilVaegt = (prof, wd, h) => { // wd: 0 = mandag
+    const hverdag = wd < 5;
+    if (prof === 'kontor') return hverdag ? (h >= 7 && h < 18 ? 1 : 0.3) : 0.25;
+    if (prof === 'butik') return wd < 6 ? (h >= 8 && h < 20 ? 1 : 0.3) : (h >= 10 && h < 17 ? 1 : 0.3);
+    if (prof === 'industri1') return hverdag && h >= 6 && h < 14 ? 1 : 0.2;
+    if (prof === 'industri2') return hverdag && h >= 6 && h < 22 ? 1 : 0.3;
+    return 1;
+  };
+  const curProfil = () => (PROFILER[P().profil] ? P().profil : 'kontor');
+  // Vægt pr. time i døgnet summeret over en uge, samt ugens samlede og maksimale vægt
+  const weekWeights = (prof) => {
+    const perHour = new Array(24).fill(0); let sum = 0, max = 0;
+    for (let wd = 0; wd < 7; wd++) for (let h = 0; h < 24; h++) { const w = profilVaegt(prof, wd, h); perHour[h] += w; sum += w; max = Math.max(max, w); }
+    return { perHour, sum, max };
+  };
+  const profMonths = () => rows('spot_profil_maaned') || [];
+  const fullMonths = (area) => {
+    const ms = [...new Set(profMonths().filter((r) => r.omraade === area && r.profil === 'flad').map((r) => r.maaned))].sort();
+    const cur = todayStr.slice(0, 7);
+    return ms.filter((m) => m < cur).slice(-12);
+  };
+  const prof12 = (area, prof) => {
+    const ms = new Set(fullMonths(area));
+    const rs = profMonths().filter((r) => r.omraade === area && r.profil === prof && ms.has(r.maaned) && N(r.oere_kwh) != null);
+    const w = d3.sum(rs, (r) => N(r.vaegt)); if (!w) return null;
+    return { v: d3.sum(rs, (r) => N(r.oere_kwh) * N(r.vaegt)) / w, n: rs.length, from: rs.length ? rs[0].maaned : null, to: rs.length ? rs[rs.length - 1].maaned : null };
+  };
+  dash.draw('profval', (el) => { const r = prof12(el.dataset.area, el.dataset.prof); el.textContent = r ? f1(r.v) + (el.dataset.unit || '') : '—'; });
+  dash.draw('prof_table', (tbl) => {
+    tbl.replaceChildren();
+    const area = dkArea(); const d = profMonths().filter((r) => r.omraade === area);
+    if (!d.length) return;
+    const months = [...new Set(d.map((r) => r.maaned))].sort().slice(-13).reverse();
+    const profs = Object.keys(PROFILER);
+    const thead = document.createElement('thead'); const hr = document.createElement('tr');
+    ['Måned', ...profs.map((p) => PROFILER[p])].forEach((t, i) => { const th = document.createElement('th'); th.textContent = t; if (i) th.className = 'num'; hr.append(th); });
+    thead.append(hr); tbl.append(thead);
+    const tb = document.createElement('tbody');
+    const tr12 = document.createElement('tr'); tr12.className = 'mo-top';
+    cell(tr12, 'Seneste 12 hele måneder');
+    const flat12 = prof12(area, 'flad');
+    profs.forEach((p) => { const r = prof12(area, p); cell(tr12, r ? `${f1(r.v)} (${f2(flat12 ? r.v / flat12.v : 1)})` : '–', 'num'); });
+    tb.append(tr12);
+    months.forEach((m) => {
+      const tr = document.createElement('tr'); cell(tr, fmtDate(m) + (m === todayStr.slice(0, 7) ? ' (til dato)' : ''));
+      profs.forEach((p) => { const r = d.find((x) => x.maaned === m && x.profil === p); cell(tr, r && N(r.oere_kwh) != null ? `${f1(N(r.oere_kwh))} (${f2(N(r.profilfaktor))})` : '–', 'num'); });
+      tb.append(tr);
+    });
+    tbl.append(tb);
+  });
+
+  // ----- tariffs tab -----
+  const netAll = () => rows('nettariffer') || [];
+  const netRows = () => netAll().filter((r) => (r.kundetype || 'C') === kundetype());
+  const curNet = () => {
+    const n = netRows(); const want = P().netselskab;
+    return n.find((r) => r.netselskab === want) || n.find((r) => /radius/i.test(r.netselskab)) || n[0] || null;
+  };
   const supRows = () => rows('elselskaber') || [];
-  const curSup = () => { const s = supRows(); return s.find((r) => r.id === P().elselskab) || s[0] || null; };
+  const spotSup = () => supRows().filter((r) => r.type !== 'Fast');
+  const curSup = () => { const s = spotSup(); return s.find((r) => r.id === P().elselskab) || s[0] || null; };
   dash.draw('net_sel', (sel) => {
     const n = [...netRows()].sort((a, b) => a.netselskab.localeCompare(b.netselskab, 'da'));
     sel.replaceChildren(...n.map((r) => new Option(r.netselskab, r.netselskab)));
@@ -723,7 +904,7 @@ details.mo-sources summary { cursor: pointer; }
     sel.onchange = () => dash.setParams({ netselskab: sel.value });
   });
   dash.draw('sup_sel', (sel) => {
-    sel.replaceChildren(...supRows().map((r) => new Option(`${r.selskab} – ${r.produkt}`, r.id)));
+    sel.replaceChildren(...spotSup().map((r) => new Option(`${r.selskab} – ${r.produkt}`, r.id)));
     const c = curSup(); if (c) sel.value = c.id;
     sel.onchange = () => dash.setParams({ elselskab: sel.value });
   });
@@ -731,21 +912,20 @@ details.mo-sources summary { cursor: pointer; }
     { key: 'hoej', label: 'Højlast kl. 06–17 og 21–24', hours: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23] },
     { key: 'spids', label: 'Spidslast kl. 17–21', hours: [17, 18, 19, 20] }];
   const COMP = [{ key: 'spot', label: 'Spotpris' }, { key: 'tillaeg', label: 'Elselskabets tillæg' }, { key: 'net', label: 'Nettarif' },
-    { key: 'energinet', label: 'Energinet' }, { key: 'afgift', label: 'Elafgift' }, { key: 'moms', label: 'Moms' }];
+    { key: 'energinet', label: 'Energinet' }, { key: 'afgift', label: 'Elafgift' }];
+  const tariffAt = (net, h) => N(net['t' + String(h).padStart(2, '0')]) * 100;
   const stackData = () => {
-    const t = rows('spot_time'), afg = rows('afgifter'), net = curNet(), sup = curSup();
-    if (!t || !afg || !net) return null;
-    const day = hourDay(); const area = P().dkarea || 'DK1';
+    const t = rows('spot_time'), net = curNet(), sup = curSup();
+    if (!t || !rows('afgifter') || !net) return null;
+    const day = hourDay(); const area = dkArea();
     const spotH = new Map(t.filter((r) => r.dato === day && r.omraade === area).map((r) => [Number(r.time), N(r.oere_kwh)]));
-    const a = (id) => { const r = afg.find((x) => x.id === id); return r ? N(r.kr_kwh) * 100 : 0; };
-    const energinet = a('nettarif') + a('systemtarif'), afgift = a('elafgift');
-    const tillaeg = sup ? N(sup.spottillaeg_oere_kwh) / 1.25 : 0;
+    const energinet = (afgOere('nettarif') || 0) + (afgOere('systemtarif') || 0), afgift = elafgiftOere() || 0;
+    const tillaeg = sup ? N(sup.spottillaeg_oere_kwh) || 0 : 0;
     return PERIODS.map((p) => {
       const sp = d3.mean(p.hours.map((h) => spotH.get(h)).filter((v) => v != null));
-      const nt = d3.mean(p.hours.map((h) => N(net['t' + String(h).padStart(2, '0')]) * 100));
+      const nt = d3.mean(p.hours.map((h) => tariffAt(net, h)));
       const ex = { spot: sp ?? 0, tillaeg, net: nt ?? 0, energinet, afgift };
-      const sum = Object.values(ex).reduce((s, v) => s + v, 0);
-      return { label: p.label, ...ex, moms: sum * 0.25, total: sum * 1.25, spotOk: sp != null };
+      return { label: p.label, ...ex, total: Object.values(ex).reduce((s, v) => s + v, 0) };
     });
   };
   dash.draw('ch_stack', (el) => {
@@ -764,15 +944,14 @@ details.mo-sources summary { cursor: pointer; }
         const v = Math.max(0, d[c.key]);
         svg.append('rect').attr('x', x(acc)).attr('width', Math.max(0, x(acc + v) - x(acc))).attr('y', yb(d.label)).attr('height', yb.bandwidth())
           .style('fill', COL(i))
-          .on('pointermove', (ev) => { const [mx, my] = d3.pointer(ev, el); fillTip(tip, d.label, COMP.map((cc, j) => ({ color: COL(j), label: cc.label, value: f1(d[cc.key]) + ' øre' })).concat([{ label: 'I alt', value: f1(d.total) + ' øre' }])); placeTip(el, tip, mx, my); })
+          .on('pointermove', (ev) => { const [mx, my] = d3.pointer(ev, el); fillTip(tip, d.label, COMP.map((cc, j) => ({ color: COL(j), label: cc.label, value: f2(d[cc.key]) + ' øre' })).concat([{ label: 'I alt', value: f1(d.total) + ' øre' }])); placeTip(el, tip, mx, my); })
           .on('pointerleave', () => { tip.hidden = true; });
         acc += v;
       });
       svg.append('text').attr('x', left - 8).attr('y', yb(d.label) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 11).text(d.label);
       svg.append('text').attr('x', x(acc) + 6).attr('y', yb(d.label) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('font-size', 11).style('fill', 'var(--color-fg)').text(f1(d.total) + ' øre');
     });
-    const ticks = x.ticks(5);
-    svg.append('g').selectAll('text').data(ticks).join('text').attr('x', (v) => x(v)).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).text(f0);
+    svg.append('g').selectAll('text').data(x.ticks(5)).join('text').attr('x', (v) => x(v)).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).text(f0);
   });
   dash.draw('stack_legend', (el) => {
     el.replaceChildren();
@@ -781,19 +960,24 @@ details.mo-sources summary { cursor: pointer; }
   dash.draw('afg_body', (tb) => {
     tb.replaceChildren();
     (rows('afgifter') || []).forEach((r) => {
-      const tr = document.createElement('tr'); const v = N(r.kr_kwh) * 100;
-      cell(tr, r.navn); cell(tr, f2(v), 'num'); cell(tr, f2(v * 1.25), 'num'); cell(tr, r.gyldig_fra ? fmtDate(r.gyldig_fra) : '');
+      const tr = document.createElement('tr');
+      cell(tr, r.navn); cell(tr, f2(N(r.kr_kwh) * 100), 'num'); cell(tr, r.gyldig_fra ? fmtDate(r.gyldig_fra) : '');
       tb.append(tr);
+      if (r.id === 'elafgift') {
+        const t2 = document.createElement('tr');
+        cell(t2, 'Elafgift efter godtgørelse (momsregistrerede virksomheder)'); cell(t2, f2(Math.min(N(r.kr_kwh) * 100, ELAFGIFT_GODTGJORT_OERE)), 'num'); cell(t2, '2026–2027');
+        tb.append(t2);
+      }
     });
   });
 
   // sortable tables
-  const sortState = { net: { key: 'spids', dir: -1 }, sup: { key: 'aar', dir: 1 } };
+  const sortState = { net: { key: 'spids', dir: -1 }, sup: { key: 'abo', dir: 1 } };
   document.querySelectorAll('.mo-sortable').forEach((tbl) => {
     const name = tbl.dataset.table;
     tbl.querySelectorAll('th[data-sort] button').forEach((b) => b.addEventListener('click', () => {
       const k = b.parentElement.dataset.sort; const s = sortState[name];
-      if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = typeof k === 'string' && ['netselskab', 'selskab', 'produkt', 'binding', 'fra'].includes(k) ? 1 : -1; }
+      if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = ['netselskab', 'selskab', 'produkt', 'binding', 'fra', 'type'].includes(k) ? 1 : -1; }
       tbl.querySelectorAll('th[data-sort]').forEach((th) => { if (th.dataset.sort === s.key) th.setAttribute('aria-sort', s.dir > 0 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort'); });
       dash.draw(name === 'net' ? 'net_body' : 'sup_body');
     }));
@@ -807,54 +991,96 @@ details.mo-sources summary { cursor: pointer; }
   };
   dash.draw('net_body', (tb) => {
     tb.replaceChildren();
-    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 125, hoej: N(r.hoejlast_kr) * 125, spids: N(r.spidslast_kr) * 125, fra: r.gyldig_fra }));
+    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 100, hoej: N(r.hoejlast_kr) * 100, spids: N(r.spidslast_kr) * 100, eff: N(r.effekt_kr_kw_aar), fra: r.gyldig_fra }));
     const sel = curNet();
     list.sort(sorter(sortState.net)).forEach((x) => {
       const tr = document.createElement('tr'); if (sel && x.r === sel) tr.className = 'mo-top';
       cell(tr, x.netselskab); cell(tr, f2(x.lav), 'num'); cell(tr, f2(x.hoej), 'num'); cell(tr, f2(x.spids), 'num');
+      cell(tr, dash_(x.eff, f0), 'num');
       cell(tr, x.fra ? fmtDate(x.fra) : '', 'mo-hide-narrow'); cell(tr, x.r.tarif, 'mo-hide-narrow');
       tb.append(tr);
     });
   });
 
-  // ----- suppliers tab -----
-  const forbrug = () => { const v = Number(P().forbrug ?? 4000); return isFinite(v) && v >= 0 ? v : 4000; };
-  // Abonnement efter forbrugstrin ("kWh:kr;…") og ekstra tillæg over en grænse ("kWh:øre")
-  const aboFor = (r, kwh) => {
-    const trin = (r.abonnement_trin || '').split(';').filter(Boolean).map((t) => t.split(':').map(Number));
-    if (!trin.length) return N(r.abonnement_kr_md) || 0;
-    const hit = trin.find(([lim]) => kwh <= lim);
-    return hit ? hit[1] : trin[trin.length - 1][1];
+  // ----- business calculator -----
+  const forbrug = () => { const v = Number(P().forbrug ?? 250000); return isFinite(v) && v >= 0 ? v : 250000; };
+  const calcRows = () => {
+    const area = dkArea(), prof = curProfil(), kwh = forbrug(), net = curNet();
+    const spot = prof12(area, prof);
+    if (!net || !rows('afgifter')) return null;
+    const ww = weekWeights(prof);
+    const tarif = d3.sum(ww.perHour.map((w, h) => w * tariffAt(net, h))) / ww.sum; // øre/kWh
+    const peakKw = kwh * ww.max / (ww.sum * 52.143);
+    const effekt = N(net.effekt_kr_kw_aar) ? N(net.effekt_kr_kw_aar) * peakKw : 0;
+    const energinet = (afgOere('nettarif') || 0) + (afgOere('systemtarif') || 0);
+    const afgift = elafgiftOere() || 0;
+    const fixedNet = { net: tarif * kwh / 100, effekt, energinet: energinet * kwh / 100, afgift: afgift * kwh / 100 };
+    return supRows().map((r) => {
+      const abo = (N(r.abonnement_kr_md) || 0) * 12;
+      const maks = N(r.maks_kwh_aar);
+      let el = null, till = 0, note = [];
+      if (r.type === 'Fast') {
+        const fp = N(area === 'DK1' ? r.fastpris_dk1_oere : r.fastpris_dk2_oere);
+        el = fp != null ? fp * kwh / 100 : null;
+        note.push('Fast pris' + (r.binding ? `, binding ${r.binding}` : ''));
+      } else {
+        el = spot ? spot.v * kwh / 100 : null;
+        till = (N(r.spottillaeg_oere_kwh) || 0) * kwh / 100;
+        if (r.type === 'Prisloft') note.push('Prisloft – tillægget betaler for loftet');
+      }
+      if (maks && kwh > maks) note.push(`Over produktets grænse på ${f0(maks)} kWh – individuelt tilbud`);
+      if (/ikke angivet|antaget/i.test(r.moms_note || '')) note.push(r.moms_note);
+      const total = el == null ? null : el + till + abo + fixedNet.net + fixedNet.effekt + fixedNet.energinet + fixedNet.afgift;
+      return { r, lab: `${r.selskab} · ${r.produkt}`, el, till, abo, ...fixedNet, total, oere: total == null ? null : total / kwh * 100, over: !!(maks && kwh > maks), note: note.join(' · ') };
+    }).sort((a, b) => (a.over - b.over) || ((a.total ?? Infinity) - (b.total ?? Infinity)));
   };
-  const annual = (r) => {
-    const kwh = forbrug();
-    const till = N(r.spottillaeg_oere_kwh) || 0;
-    const [over, extra] = (r.ekstra_tillaeg || '').split(':').map(Number);
-    const extraCost = over && extra && kwh > over ? (kwh - over) * extra / 100 : 0;
-    const bs = N(r.betalingsservice_kr) || 0, per = r.betalingsservice_periode === 'kvt' ? 4 : 12;
-    return aboFor(r, kwh) * 12 + till * kwh / 100 + extraCost + bs * per;
-  };
-  dash.draw('forbrug_txt', (el) => { el.textContent = f0(forbrug()); });
-  dash.draw('ch_suppliers', (el) => {
-    const d = state(el, 'elselskaber'); if (!d) return;
-    const data = d.map((r) => ({ lab: `${r.selskab} · ${r.produkt}`, v: annual(r) })).sort((a, b) => a.v - b.v);
-    barH(el, data, 'lab', 'v', { fmt: (v) => f0(v) + ' kr.', label: 'Elselskabets del af regningen pr. år' });
+  dash.draw('calc_title', (el) => { el.textContent = `${f0(forbrug())} kWh · ${PROFILER[curProfil()].toLowerCase()} · ${dkArea()} · ${kundetype()}${curNet() ? ' · ' + curNet().netselskab : ''}`; });
+  dash.draw('calc_note', (el) => {
+    const s = prof12(dkArea(), curProfil()), fl = prof12(dkArea(), 'flad');
+    el.textContent = s ? `Profilvægtet spotpris ${fmtDate(s.from)}–${fmtDate(s.to)}: ${f1(s.v)} øre/kWh (flad profil ${f1(fl ? fl.v : s.v)} øre/kWh). Alle beløb i kr. ekskl. moms.` : 'Profilvægtede spotpriser er ikke beregnet endnu.';
+  });
+  dash.draw('ch_calc', (el) => {
+    el.replaceChildren();
+    const cr = calcRows(); if (!cr) return;
+    const data = cr.filter((x) => x.total != null).map((x) => ({ lab: x.lab, v: x.total, over: x.over }));
+    if (!data.length) return;
+    barH(el, data, 'lab', 'v', { fmt: (v) => f0(v) + ' kr.', hl: (r) => !r.over, label: 'Anslået årlig elomkostning pr. produkt' });
+  });
+  dash.draw('calc_body', (tb) => {
+    tb.replaceChildren();
+    const cr = calcRows(); if (!cr) return;
+    cr.forEach((x) => {
+      const tr = document.createElement('tr'); if (x.over) tr.style.color = 'var(--color-fg-muted)';
+      cell(tr, x.lab); cell(tr, dash_(x.el, f0), 'num'); cell(tr, f0(x.till), 'num'); cell(tr, f0(x.abo), 'num'); cell(tr, f0(x.net), 'num');
+      cell(tr, x.effekt ? f0(x.effekt) : '–', 'num mo-hide-narrow'); cell(tr, f0(x.energinet), 'num mo-hide-narrow'); cell(tr, f0(x.afgift), 'num mo-hide-narrow');
+      cell(tr, dash_(x.total, f0), 'num'); cell(tr, dash_(x.oere, f1), 'num'); cell(tr, x.note, 'mo-hide-narrow');
+      tb.append(tr);
+    });
   });
   dash.draw('sup_body', (tb) => {
     tb.replaceChildren();
-    const list = supRows().map((r) => ({ r, selskab: r.selskab, produkt: r.produkt, abo: aboFor(r, forbrug()), tillaeg: N(r.spottillaeg_oere_kwh), aar: annual(r), binding: r.binding, bs: N(r.betalingsservice_kr), ik: N(r.indbetalingskort_kr) }));
+    const list = supRows().map((r) => ({ r, selskab: r.selskab, produkt: r.produkt, type: r.type, abo: N(r.abonnement_kr_md), tillaeg: N(r.spottillaeg_oere_kwh), fast: N(r.fastpris_dk1_oere), binding: r.binding, maks: N(r.maks_kwh_aar) }));
     list.sort(sorter(sortState.sup)).forEach((x) => {
       const r = x.r; const tr = document.createElement('tr');
-      cell(tr, x.selskab); cell(tr, x.produkt);
-      cell(tr, dash_(x.abo, f2), 'num'); cell(tr, dash_(x.tillaeg, f2), 'num'); cell(tr, f0(x.aar) + ' kr.', 'num');
+      cell(tr, x.selskab); cell(tr, x.produkt); cell(tr, x.type);
+      cell(tr, dash_(x.abo, f2), 'num'); cell(tr, dash_(x.tillaeg, f2), 'num');
+      cell(tr, x.fast == null ? '–' : `${f2(x.fast)} / ${f2(N(r.fastpris_dk2_oere))}`, 'num');
       cell(tr, x.binding);
-      cell(tr, x.bs == null ? '–' : `${f2(x.bs)} kr./${r.betalingsservice_periode || 'md'}`, 'num mo-hide-narrow');
-      cell(tr, x.ik == null ? '–' : `${f2(x.ik)} kr./${r.indbetalingskort_periode || 'md'}`, 'num mo-hide-narrow');
-      cell(tr, [r.tillaeg_note, r.oevrige_gebyrer, r.afregning].filter(Boolean).join(' · '), 'mo-hide-narrow');
+      cell(tr, x.maks == null ? '–' : f0(x.maks), 'num mo-hide-narrow');
+      cell(tr, [r.forbrug_note, r.gebyrer, r.moms_note].filter(Boolean).join(' · '), 'mo-hide-narrow');
       const td = document.createElement('td'); td.className = 'mo-hide-narrow';
       if (/^https:\/\//.test(r.url)) { const a = document.createElement('a'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.kilde; td.append(a); } else td.textContent = r.kilde;
-      if (r.sidst_kontrolleret) td.append(document.createTextNode(` · kontrolleret ${fmtDate(r.sidst_kontrolleret)}`));
+      if (r.sidst_kontrolleret) td.append(document.createTextNode(` · tjekket ${fmtDate(r.sidst_kontrolleret)}`));
       tr.append(td); tb.append(tr);
+    });
+  });
+  dash.draw('tilbud_body', (tb) => {
+    tb.replaceChildren();
+    (rows('elselskaber_tilbud') || []).forEach((r) => {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      if (/^https:\/\//.test(r.url)) { const a = document.createElement('a'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.selskab; td.append(a); } else td.textContent = r.selskab;
+      tr.append(td); cell(tr, r.note); tb.append(tr);
     });
   });
 

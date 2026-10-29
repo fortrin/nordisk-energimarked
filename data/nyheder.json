@@ -8,8 +8,8 @@
   "kilde": "DK Havenergi (DOI)",
   "url": "https://www.doi.dk/havenergi/artikel/trods-markant-hoejere-stroempriser-falder-danskernes-elregning",
   "publiceret": "2026-10-29",
-  "resume": "Spotprisen på el er steget med mere end 50 % i år, men den midlertidige nedsættelse af elafgiften til EU's minimum (0,8 øre/kWh ekskl. moms i 2026–2027) betyder, at husholdningerne alligevel ventes at betale mindre end sidste år.",
-  "betydning": "Afgiftslettelsen skjuler en stor stigning i selve elprisen. Når afgiften vender tilbage i 2028, slår prisniveauet fuldt igennem – relevant for budgetter og fastprisbeslutninger."
+  "resume": "Spotprisen på el er steget med mere end 50 % i år, men den midlertidige nedsættelse af elafgiften til EU's minimum (0,8 øre/kWh ekskl. moms i 2026–2027) holder den samlede elregning nede. Momsregistrerede virksomheder kan få godtgjort elafgiften ned til 0,4 øre/kWh.",
+  "betydning": "For virksomheder betyder afgiften næsten intet i 2026–2027 – det er spotprisen og tarifferne, der driver omkostningen. Det gør indkøbsstrategien (spot, fastpris eller prisloft) og forbrugsprofilen vigtigere i budgettet for 2027."
  },
  {
   "id": "2026-10-29-dk-2",
@@ -28,12 +28,12 @@
   "dato": "2026-10-29",
   "region": "Danmark",
   "rang": 3,
-  "titel": "Vintertariffer: Spidslasttariffen kl. 17–21 er steget ca. 131 % hos de fleste netselskaber",
+  "titel": "Vintertariffer: Spidslasttariffen kl. 17–21 er steget ca. 131 % for C-kunder hos de fleste netselskaber",
   "kilde": "eltjek24",
   "url": "https://eltjek24.dk/artikler/nyheder/fra-oktober-bliver-prisen-paa-stroemtransport-dyrere-se-hvor-meget-din-nettarif-stiger/",
   "publiceret": "2026-10-19",
-  "resume": "Fra 1. oktober hæver 28 af 33 netselskaber nettariffen, og spidslasten kl. 17–21 rammes hårdest. Hos Radius er den 119,45 øre/kWh inkl. moms, hos Cerius 129,75 og hos N1 98,84 – mod 11–14 øre om natten.",
-  "betydning": "Flytning af forbrug væk fra kl. 17–21 er nu den største enkeltbesparelse for kunder med fleksibelt forbrug. Se tabellen under Afgifter & nettariffer."
+  "resume": "Fra 1. oktober hæver 28 af 33 netselskaber nettariffen, og spidslasten kl. 17–21 rammes hårdest. For C-kunder er den hos Radius 95,56 øre/kWh ekskl. moms, hos Cerius 103,80 og hos N1 79,07 – mod ca. 9–11 øre om natten.",
+  "betydning": "Mindre virksomheder på C-tarif (fx kontorer og butikker) betaler mest for forbrug kl. 17–21 – flyt fx opladning og kølekompressorer uden for spidslasten. B- og A-kunder har langt lavere tariffer, men betaler effektbetaling. Se fanen Tariffer og afgifter."
  },
  {
   "id": "2026-10-29-dk-4",
@@ -45,7 +45,7 @@
   "url": "https://danskfjernvarme.dk/aktuelt/nyheder/2026/elpriserne-er-steget-over-30-procent-paa-et-aar",
   "publiceret": "2026-10-11",
   "resume": "Gennemsnitsprisen for januar–september 2026 var ca. 80 øre/kWh i både DK1 og DK2, 34 % over samme periode i 2025. Norlys peger på gasprisen efter konflikten om Hormuzstrædet, og antallet af dage med over 1 kr./kWh mellem dagens billigste og dyreste time er steget markant.",
-  "betydning": "Spotprodukter med fleksibelt forbrug vinder, mens kunder med fast forbrug i dyre timer bliver ramt. Det styrker argumentet for timeafregnede aftaler og styring af forbrug."
+  "betydning": "Virksomheder med flytbart forbrug (køl, opladning, processer) kan spare ved at følge timeprisen; virksomheder med forbrug i dagtimerne og tidlig aften bør sammenligne spot med fastpris eller prisloft. Se profilvægtet spotpris under Elpriser i Norden."
  },
  {
   "id": "2026-10-29-dk-5",
@@ -69,7 +69,7 @@
   "url": "https://globenewswire.com/news-release/2026/10/29/3390916/0/no/sterke-resultater-til-tross-for-lavere-produksjon.html",
   "publiceret": "2026-10-29",
   "resume": "Statkraft producerede 14,7 TWh i 3. kvartal (15,8 TWh året før), og produktionen i Norge faldt ca. 13 %. Højere priser gav et underliggende EBITDA på 5,2 mia. NOK mod 3,1 mia. NOK året før.",
-  "betydning": "Lav vandkraftproduktion og høje priser bekræfter et stramt nordisk marked på vej ind i vinteren."
+  "betydning": "Et stramt nordisk marked på vej ind i vinteren peger på høje priser i Q1 – relevant for virksomheder, der overvejer at fastlåse en del af forbruget."
  },
  {
   "id": "2026-10-29-nord-2",
@@ -81,7 +81,7 @@
   "url": "https://www.document.news/2026/10/29/ntb-echoes-government-line-on-norgespris-norways-electricity-subsidy-scheme",
   "publiceret": "2026-10-29",
   "resume": "Den norske fastprisordning Norgespris har udbetalt ca. 19,8 mia. NOK til husholdninger og fritidshuse frem til 1. oktober 2026. Aftalerne udløber 31. december, og regeringen har foreslået at hæve satsen fra 0,40 til 0,45 NOK/kWh i 2027.",
-  "betydning": "Ordningen dæmper norske husholdningers prisfølsomhed, mens erhverv stadig handler til spot – det påvirker efterspørgslen og flowet mod Danmark."
+  "betydning": "Norgespris gælder husholdninger; norske virksomheder handler fortsat til spot. Ordningen dæmper norsk prisfølsomhed og kan påvirke flowet og priserne mod DK1."
  },
  {
   "id": "2026-10-29-nord-3",

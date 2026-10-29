@@ -33,8 +33,8 @@
       "opdateres": "Hverdage kl. ca. 13:45"
     },
     "nettariffer": {
-      "titel": "Nettariffer pr. netselskab",
-      "beskrivelse": "Gældende nettarif C (time) for hver dansk netvirksomhed, time for time i kr./kWh ekskl. moms, samt netabonnement, fra Energinets DatahubPricelist (Energi Data Service).",
+      "titel": "Nettariffer pr. netselskab og kundetype",
+      "beskrivelse": "Gældende nettarif time for time (kr./kWh ekskl. moms) for kundetype C, B-lav, B-høj, A-lav og A-høj pr. dansk netvirksomhed samt effektbetaling (kr./kW/år, omregnet fra Datahubs døgnpris), fra Energinets DatahubPricelist.",
       "fil": "data/nettariffer.csv",
       "opdateret": "2026-10-29",
       "af": "GitHub Action",
@@ -49,11 +49,11 @@
       "opdateres": "Hverdage"
     },
     "elselskaber": {
-      "titel": "Elselskabernes priser og gebyrer",
-      "beskrivelse": "Abonnement, spottillæg, binding og betalingsgebyrer for hovedproduktet hos 15 af de største danske elselskaber (inkl. moms). Primært fra Strømligning (stromligning.dk), der kontrollerer data med selskaberne, suppleret med selskabernes egne sider.",
+      "titel": "Erhvervsprodukter hos elselskaberne",
+      "beskrivelse": "Offentliggjorte erhvervsprodukter (spot, fast pris og prisloft) med abonnement, tillæg, fastpris, binding, forbrugsgrænse og gebyrer ekskl. moms, fra selskabernes egne erhvervssider. Større virksomheder får typisk individuelle tilbud.",
       "fil": "data/elselskaber.csv",
       "opdateret": "2026-10-29",
-      "af": "Claude",
+      "af": "Claude, fra selskabernes erhvervssider",
       "opdateres": "Ugentligt (mandag)"
     },
     "omraader": {
@@ -63,6 +63,22 @@
       "opdateret": "2026-10-29",
       "af": "Claude",
       "opdateres": "Fast"
+    },
+    "elselskaber_tilbud": {
+      "titel": "Elselskaber med individuelle tilbud",
+      "beskrivelse": "Selskaber og forbrugsgrænser, hvor erhvervspriser kun gives efter henvendelse.",
+      "fil": "data/elselskaber_tilbud.csv",
+      "opdateret": "2026-10-29",
+      "af": "Claude",
+      "opdateres": "Ugentligt (mandag)"
+    },
+    "spot_profil_maaned": {
+      "titel": "Profilvægtede spotpriser",
+      "beskrivelse": "Månedlig spotpris i DK1 og DK2 vægtet efter typiske erhvervsprofiler (døgndrift, kontor, butik, industri i 1 og 2 skift) og profilfaktoren i forhold til den flade pris. Beregnet af kvarters- og timepriserne fra Energi Data Service.",
+      "fil": "data/spot_profil_maaned.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage"
     }
   },
   "params": {
@@ -70,8 +86,11 @@
     "periode": "90",
     "dag": "",
     "netselskab": "Radius Elnet A/S",
-    "forbrug": 4000,
+    "forbrug": 250000,
     "nyhedsdato": "",
-    "dkarea": "DK2"
+    "dkarea": "DK2",
+    "kundetype": "B-høj",
+    "profil": "kontor",
+    "elafgift": "godtgjort"
   }
 }

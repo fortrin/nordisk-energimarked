@@ -50,6 +50,31 @@ LAND = {"DK1": "Danmark", "DK2": "Danmark", "FI": "Finland",
 
 ERRORS: list[str] = []
 
+# Erhvervsprofiler: relativ last pr. time (lokal tid). Helligdage behandles som hverdage.
+PROFILER = {
+    "flad": "Døgndrift / flad",
+    "kontor": "Kontor",
+    "butik": "Butik",
+    "industri1": "Industri, 1 skift",
+    "industri2": "Industri, 2 skift",
+}
+
+
+def profil_vaegt(profil: str, t: datetime) -> float:
+    h, wd = t.hour, t.weekday()  # 0 = mandag
+    hverdag = wd < 5
+    if profil == "kontor":
+        return (1.0 if 7 <= h < 18 else 0.3) if hverdag else 0.25
+    if profil == "butik":
+        if wd < 6:
+            return 1.0 if 8 <= h < 20 else 0.3
+        return 1.0 if 10 <= h < 17 else 0.3
+    if profil == "industri1":
+        return 1.0 if hverdag and 6 <= h < 14 else 0.2
+    if profil == "industri2":
+        return 1.0 if hverdag and 6 <= h < 22 else 0.3
+    return 1.0
+
 
 # ------------------------------------------------------------ hjælpere
 def annotate(level: str, title: str, message: str) -> None:
@@ -203,9 +228,17 @@ def update_spot(today: date) -> None:
     first = today - timedelta(days=DAYS_KEEP)
     tomorrow = today + timedelta(days=1)
 
+    prof_path = DATA / "spot_profil_daglig.csv"
+    old_prof = read_csv(prof_path)
+    have_prof = defaultdict(set)
+    for r in old_prof:
+        if r["profil"] == "kontor":
+            have_prof[r["omraade"]].add(r["dato"])
+
     def missing(area: str) -> list[date]:
         """Manglende dage samt de seneste 3 dage (genhentes altid)."""
-        ds = [d for d in daterange(first, tomorrow) if d.isoformat() not in have[area]]
+        ds = [d for d in daterange(first, tomorrow) if d.isoformat() not in have[area]
+              or (area in ("DK1", "DK2") and d.isoformat() not in have_prof[area])]
         recent = [today - timedelta(days=2), today - timedelta(days=1), today, tomorrow]
         return sorted(set(ds) | set(recent))
 
@@ -243,6 +276,7 @@ def update_spot(today: date) -> None:
 
     # Døgnaggregering
     new_daily: dict[tuple, dict] = {}
+    new_prof: dict[tuple, dict] = {}
     hourly: dict[tuple, list] = defaultdict(list)
     for area, pts in prices.items():
         by_day = defaultdict(list)
@@ -265,6 +299,16 @@ def update_spot(today: date) -> None:
             }
             for t, eur in lst:
                 hourly[(d.isoformat(), t.hour, area)].append(eur)
+            if area in ("DK1", "DK2"):
+                scale = 24 / len(lst)  # ens vægt pr. døgn uanset 15- eller 60-minutters opløsning
+                for prof in PROFILER:
+                    ws = [(profil_vaegt(prof, t) * scale, e) for t, e in lst]
+                    wsum = sum(w for w, _ in ws)
+                    new_prof[(d.isoformat(), area, prof)] = {
+                        "dato": d.isoformat(), "omraade": area, "profil": prof,
+                        "vaegtet_eur_mwh": f"{sum(w * e for w, e in ws) / wsum:.4f}",
+                        "vaegt": f"{wsum:.4f}", "eur_dkk": f"{rate(d):.4f}",
+                    }
 
     merged = {(r["dato"], r["omraade"]): r for r in old if r["dato"] >= first.isoformat()}
     merged.update(new_daily)
@@ -282,6 +326,28 @@ def update_spot(today: date) -> None:
     hrows = sorted((v for k, v in old_h.items() if k[0] in days_with),
                    key=lambda r: (r["dato"], int(_order(r["omraade"])), int(r["time"])))
     write_csv(DATA / "spot_time.csv", ["dato", "time", "omraade", "eur_mwh", "oere_kwh"], hrows)
+
+    # Profilvægtede priser (DK1/DK2)
+    pm = {(r["dato"], r["omraade"], r["profil"]): r for r in old_prof if r["dato"] >= first.isoformat()}
+    pm.update(new_prof)
+    prows = sorted(pm.values(), key=lambda r: (r["dato"], r["omraade"], list(PROFILER).index(r["profil"])))
+    write_csv(prof_path, ["dato", "omraade", "profil", "vaegtet_eur_mwh", "vaegt", "eur_dkk"], prows)
+    agg = defaultdict(lambda: [0.0, 0.0, 0])
+    for r in prows:
+        k = (r["dato"][:7], r["omraade"], r["profil"])
+        w = float(r["vaegt"])
+        agg[k][0] += float(r["vaegtet_eur_mwh"]) * w * float(r["eur_dkk"]) / 10
+        agg[k][1] += w
+        agg[k][2] += 1
+    pmrows = []
+    for (mon, area, prof), (num, den, n) in sorted(agg.items(), key=lambda kv: (kv[0][0], kv[0][1], list(PROFILER).index(kv[0][2]))):
+        flat = agg.get((mon, area, "flad"))
+        fl = flat[0] / flat[1] if flat and flat[1] else None
+        v = num / den if den else None
+        pmrows.append({"maaned": mon, "omraade": area, "profil": prof, "navn": PROFILER[prof],
+                       "oere_kwh": r2(v) if v is not None else "", "vaegt": f"{den:.2f}",
+                       "profilfaktor": f"{v / fl:.4f}" if v is not None and fl else "", "dage": str(n)})
+    write_csv(DATA / "spot_profil_maaned.csv", ["maaned", "omraade", "profil", "navn", "oere_kwh", "vaegt", "profilfaktor", "dage"], pmrows)
 
     # Månedsstatistik
     m = defaultdict(list)
@@ -369,68 +435,104 @@ def update_tariffs(now: datetime) -> None:
     if afg:
         write_csv(DATA / "afgifter.csv", ["id", "navn", "kr_kwh", "gyldig_fra", "note"], afg)
 
-    # Netselskabernes C-tarif (husholdninger og mindre virksomheder).
-    # Hovedtariffen er den nyeste tidsdifferentierede "Nettarif C". Nogle netselskaber deler
-    # tariffen op i flere poster, som lægges til: regional nettarif C, rabat på nettarif C og
-    # tarif for overliggende/overordnet net.
+    # Netselskabernes tariffer pr. kundetype.
+    #  C      tilsluttet 0,4 kV (husholdninger og mindre virksomheder)
+    #  B-lav  0,4 kV-siden af en 10/0,4 kV-transformer, B-høj 10 kV, A-lav 10 kV-siden af 50/10 kV, A-høj 50/60 kV
+    # Hovedtariffen er den nyeste tidsdifferentierede nettarif for kundetypen. Opdelte poster lægges
+    # til: regional tarif og rabat for samme kundetype, og for C også overliggende net.
+    # Effektbetaling (kr./kW) aflæses særskilt; Datahub angiver den pr. døgn.
     import re
-    MAIN = re.compile(r"nettarif\s*c\b|c-kunde nettarif|nettarif fra 0")
+    TYPES = {
+        "C": re.compile(r"nettarif\s*c\b|net tarif c\b|c-kunde nettarif|nettarif fra 0"),
+        "B-lav": re.compile(r"\bb[\s_-]?lav\b"),
+        "B-høj": re.compile(r"\bb[\s_-]?høj\b"),
+        "A-lav": re.compile(r"\ba[\s_-]?lav\b"),
+        "A-høj": re.compile(r"\ba[\s_-]?høj\b"),
+    }
+    TARIF = re.compile(r"tarif")
     EXCL = re.compile(r"kollektiv|fællesskab|flex|skabelon|rådighed|effekt|nettab|rabat|regional|overliggende|overordnet|"
-                      r"produktion|indfød|egenprod|erhverv|fritid|midlertidig|reaktiv|\bb\b|\ba\b|b-lav|b-høj|a-lav|a-høj|"
-                      r"100\.000|1\.000\.000")
-    REGIONAL = re.compile(r"regional nettarif c")
-    REBATE = re.compile(r"rabat.*nettarif c")
+                      r"produktion|indfød|egenprod|samplac|\bep\b|direkte linje|uden aftagepligt|plus|maske|dnu|"
+                      r"erhverv|fritid|midlertidig|reaktiv|100\.000|1\.000\.000")
     UPSTREAM = re.compile(r"overliggende net|overordnet net")
-    UP_EXCL = re.compile(r"rabat|produktion|indfød|\bb\b|\ba\b|b-lav|b-høj|a-lav|a-høj|b kunde|a kunde")
+    UP_EXCL = re.compile(r"rabat|produktion|indfød|\bb\b|\ba\b|b[\s-]?lav|b[\s-]?høj|a[\s-]?lav|a[\s-]?høj|b kunde|a kunde")
+    SIDE_EXCL = re.compile(r"kollektiv|fællesskab|indfød|egenprod|produktion|samplac|\bep\b|direkte linje|effekt|rådighed|dnu")
+    EFF_EXCL = re.compile(r"kollektiv|fællesskab|samplac|egenprod|direkte linje|\bep\b|dnu|indfød")
     by_owner = defaultdict(list)
     for r in recs:
         if r.get("GLN_Number") != ENERGINET_GLN and r.get("ChargeType") == "D03":
             by_owner[(r.get("GLN_Number"), r.get("ChargeOwner"))].append(r)
 
+    def type_of(t: str) -> str | None:
+        for k, rx in TYPES.items():
+            if rx.search(t):
+                return k
+        return None
+
     rows, log = [], []
     for (gln, owner), lst in sorted(by_owner.items(), key=lambda kv: kv[0][1] or ""):
-        cands = []
-        for r in lst:
-            t = text(r)
-            if not MAIN.search(t) or EXCL.search(t):
+        for kt, rx in TYPES.items():
+            cands = []
+            for r in lst:
+                t = text(r)
+                if not rx.search(t) or EXCL.search(t) or (kt != "C" and not TARIF.search(t)):
+                    continue
+                if kt != "C" and TYPES["C"].search(t):
+                    continue
+                p = hourly_prices(r)
+                if not p or max(p) <= 0:
+                    continue
+                cands.append(((max(p) - min(p)) > 1e-6, r.get("ValidFrom") or "", r, p))
+            if not cands:
                 continue
-            p = hourly_prices(r)
-            if not p or max(p) <= 0:
-                continue
-            cands.append(((max(p) - min(p)) > 1e-6, r.get("ValidFrom") or "", r, p))
-        if not cands:
-            continue
-        cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
-        _, _, main, total = cands[0]
-        total = list(total)
-        parts = [main.get("Note") or main.get("Description") or ""]
-        for r in lst:
-            if r is main:
-                continue
-            t = text(r)
-            add = (REGIONAL.search(t) or (REBATE.search(t) and not re.search(r"lokal|kollektiv", t))
-                   or (UPSTREAM.search(t) and not UP_EXCL.search(t)))
-            if not add:
-                continue
-            p = hourly_prices(r)
-            if not p or not any(abs(v) > 1e-9 for v in p):
-                continue
-            total = [x + y for x, y in zip(total, p)]
-            parts.append(r.get("Note") or r.get("Description") or "")
-        row = {
-            "netselskab": owner, "gln": gln, "tarif": " + ".join(parts),
-            "kode": main.get("ChargeTypeCode") or "", "gyldig_fra": (main.get("ValidFrom") or "")[:10],
-            "lavlast_kr": f"{total[3]:.5f}", "hoejlast_kr": f"{total[10]:.5f}", "spidslast_kr": f"{total[18]:.5f}",
-        }
-        row.update({f"t{h:02d}": f"{total[h]:.5f}" for h in range(24)})
-        rows.append(row)
-        log.append(f"{owner}: {float(row['lavlast_kr']) * 125:.2f}/{float(row['hoejlast_kr']) * 125:.2f}/"
-                   f"{float(row['spidslast_kr']) * 125:.2f} øre inkl. moms ({row['tarif']})")
+            cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
+            _, _, main, total = cands[0]
+            total = list(total)
+            parts = [main.get("Note") or main.get("Description") or ""]
+            for r in lst:
+                if r is main:
+                    continue
+                t = text(r)
+                same = type_of(t) == kt
+                add = False
+                if same and not SIDE_EXCL.search(t) and ("regional" in t or "rabat" in t) and TARIF.search(t):
+                    add = True
+                if kt == "C" and UPSTREAM.search(t) and not UP_EXCL.search(t):
+                    add = True
+                if not add:
+                    continue
+                p = hourly_prices(r)
+                if not p or not any(abs(v) > 1e-9 for v in p):
+                    continue
+                total = [x + y for x, y in zip(total, p)]
+                parts.append(r.get("Note") or r.get("Description") or "")
+            # Effektbetaling for kundetypen (inkl. rabat på den)
+            eff, eff_parts = 0.0, []
+            for r in lst:
+                t = text(r)
+                if "effektbetaling" not in t or type_of(t) != kt or EFF_EXCL.search(t):
+                    continue
+                v = r.get("Price1")
+                if v is None or abs(float(v)) < 1e-9:
+                    continue
+                per_day = r.get("ResolutionDuration") == "P1D"
+                eff += float(v) * (365 if per_day else 1)
+                eff_parts.append(r.get("Note") or "")
+            row = {
+                "netselskab": owner, "gln": gln, "kundetype": kt, "tarif": " + ".join(parts),
+                "kode": main.get("ChargeTypeCode") or "", "gyldig_fra": (main.get("ValidFrom") or "")[:10],
+                "lavlast_kr": f"{total[3]:.5f}", "hoejlast_kr": f"{total[10]:.5f}", "spidslast_kr": f"{total[18]:.5f}",
+                "effekt_kr_kw_aar": f"{eff:.2f}" if eff_parts else "",
+            }
+            row.update({f"t{h:02d}": f"{total[h]:.5f}" for h in range(24)})
+            rows.append(row)
+            log.append(f"{owner} {kt}: {float(row['lavlast_kr']) * 100:.2f}/{float(row['hoejlast_kr']) * 100:.2f}/"
+                       f"{float(row['spidslast_kr']) * 100:.2f} øre"
+                       + (f", effekt {eff:.0f} kr/kW/år" if eff_parts else ""))
     # Diagnose: alle gældende D03-poster for udvalgte netselskaber (DIAG="navn1,navn2")
     import os
     diag = [d.strip().lower() for d in os.environ.get("DIAG", "").split(",") if d.strip()]
     if diag:
-        picked = {r["gln"] for r in rows}
+        picked = {r["gln"] for r in rows if r["kundetype"] == "C"}
         missing = sorted({o for (g, o) in by_owner if g not in picked})
         annotate("notice", "Netselskaber uden valgt tarif", "; ".join(missing)[:3900])
         chunks, cur = [], ""
@@ -455,10 +557,10 @@ def update_tariffs(now: datetime) -> None:
             annotate("warning", f"DIAG {i + 1}", c)
     if rows:
         write_csv(DATA / "nettariffer.csv",
-                  ["netselskab", "gln", "tarif", "kode", "gyldig_fra", "lavlast_kr", "hoejlast_kr", "spidslast_kr"]
-                  + [f"t{h:02d}" for h in range(24)], rows)
+                  ["netselskab", "gln", "kundetype", "tarif", "kode", "gyldig_fra", "lavlast_kr", "hoejlast_kr",
+                   "spidslast_kr", "effekt_kr_kw_aar"] + [f"t{h:02d}" for h in range(24)], rows)
     text_log = "\n".join(log)
-    for i in range(0, min(len(text_log), 7600), 3800):
+    for i in range(0, min(len(text_log), 26600), 3800):
         annotate("notice", f"Nettariffer: {len(rows)} netselskaber ({i // 3800 + 1})", text_log[i:i + 3800])
 
 
@@ -480,6 +582,7 @@ def main() -> int:
     update_tariffs(now)
     changed = [f.stem for f in DATA.glob("*.csv") if before.get(f.name) != f.read_bytes()]
     ids = {"spot_daglig": "spot_daglig", "spot_time": "spot_time", "spot_maaned": "spot_maaned",
+           "spot_profil_maaned": "spot_profil_maaned",
            "nettariffer": "nettariffer", "afgifter": "afgifter"}
     touch_manifest([ids[c] for c in changed if c in ids], today)
     print("Ændrede filer:", ", ".join(changed) or "ingen")
