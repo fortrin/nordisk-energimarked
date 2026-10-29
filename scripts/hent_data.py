@@ -375,7 +375,7 @@ def update_tariffs(now: datetime) -> None:
     # tarif for overliggende/overordnet net.
     import re
     MAIN = re.compile(r"nettarif\s*c\b|c-kunde nettarif|nettarif fra 0")
-    EXCL = re.compile(r"lokal|kollektiv|flex|skabelon|rådighed|effekt|nettab|rabat|regional|overliggende|overordnet|"
+    EXCL = re.compile(r"kollektiv|fællesskab|flex|skabelon|rådighed|effekt|nettab|rabat|regional|overliggende|overordnet|"
                       r"produktion|indfød|egenprod|erhverv|fritid|midlertidig|reaktiv|\bb\b|\ba\b|b-lav|b-høj|a-lav|a-høj|"
                       r"100\.000|1\.000\.000")
     REGIONAL = re.compile(r"regional nettarif c")
