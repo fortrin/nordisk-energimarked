@@ -369,65 +369,69 @@ def update_tariffs(now: datetime) -> None:
     if afg:
         write_csv(DATA / "afgifter.csv", ["id", "navn", "kr_kwh", "gyldig_fra", "note"], afg)
 
-    # Netselskabernes C-tarif (husholdninger og mindre virksomheder)
-    bad = ("b-", " b ", "b lav", "b høj", "a-", " a ", "erhverv", "produktion", "indfød", "egenproduktion",
-           "flex", "rabat", "lokal", "fællesskab", "fritid", "midlertidig", "afbryd", "reaktiv", "måler",
-           "gebyr", "skabelon", "net til net", "forbrugsafgift", "elafgift", "trinvis")
+    # Netselskabernes C-tarif (husholdninger og mindre virksomheder).
+    # Hovedtariffen er den nyeste tidsdifferentierede "Nettarif C". Nogle netselskaber deler
+    # tariffen op i flere poster, som lægges til: regional nettarif C, rabat på nettarif C og
+    # tarif for overliggende/overordnet net.
+    import re
+    MAIN = re.compile(r"nettarif\s*c\b|c-kunde nettarif|nettarif fra 0")
+    EXCL = re.compile(r"lokal|kollektiv|flex|skabelon|rådighed|effekt|nettab|rabat|regional|overliggende|overordnet|"
+                      r"produktion|indfød|egenprod|erhverv|fritid|midlertidig|reaktiv|\bb\b|\ba\b|b-lav|b-høj|a-lav|a-høj|"
+                      r"100\.000|1\.000\.000")
+    REGIONAL = re.compile(r"regional nettarif c")
+    REBATE = re.compile(r"rabat.*nettarif c")
+    UPSTREAM = re.compile(r"overliggende net|overordnet net")
+    UP_EXCL = re.compile(r"rabat|produktion|indfød|\bb\b|\ba\b|b-lav|b-høj|a-lav|a-høj|b kunde|a kunde")
     by_owner = defaultdict(list)
     for r in recs:
-        if r.get("GLN_Number") != ENERGINET_GLN:
+        if r.get("GLN_Number") != ENERGINET_GLN and r.get("ChargeType") == "D03":
             by_owner[(r.get("GLN_Number"), r.get("ChargeOwner"))].append(r)
 
     rows, log = [], []
     for (gln, owner), lst in sorted(by_owner.items(), key=lambda kv: kv[0][1] or ""):
-        tar = []
+        cands = []
         for r in lst:
-            if r.get("ChargeType") != "D03":
-                continue
-            t = f" {text(r)} "
-            if "nettarif c" not in t and "net tarif c" not in t and "nettarif, c" not in t:
-                continue
-            if any(b in t for b in bad):
+            t = text(r)
+            if not MAIN.search(t) or EXCL.search(t):
                 continue
             p = hourly_prices(r)
             if not p or max(p) <= 0:
                 continue
-            spread = max(p) - min(p)
-            tar.append((("time" in t) * 1, spread, r.get("ValidFrom") or "", r, p))
-        if not tar:
+            cands.append(((max(p) - min(p)) > 1e-6, r.get("ValidFrom") or "", r, p))
+        if not cands:
             continue
-        tar.sort(key=lambda x: (x[0], x[1], x[2]), reverse=True)
-        _, _, _, r, p = tar[0]
-        subs = []
-        for s in lst:
-            if s.get("ChargeType") != "D01":
+        cands.sort(key=lambda x: (x[0], x[1]), reverse=True)
+        _, _, main, total = cands[0]
+        total = list(total)
+        parts = [main.get("Note") or main.get("Description") or ""]
+        for r in lst:
+            if r is main:
                 continue
-            t = f" {text(s)} "
-            if ("abo" in t or "abonnement" in t) and (" c" in t or "nettilslutning" in t or "net abo" in t) \
-                    and not any(b in t for b in ("erhverv", "produktion", "b lav", "b høj", "a-", "flex")):
-                v = s.get("Price1")
-                if v is not None:
-                    subs.append((s.get("ValidFrom") or "", float(v), s.get("ResolutionDuration") or ""))
-        sub = ""
-        if subs:
-            subs.sort(reverse=True)
-            vf, v, res = subs[0]
-            sub = r2(v * 30.42 if res == "P1D" else v)  # pr. måned
+            t = text(r)
+            add = (REGIONAL.search(t) or (REBATE.search(t) and not re.search(r"lokal|kollektiv", t))
+                   or (UPSTREAM.search(t) and not UP_EXCL.search(t)))
+            if not add:
+                continue
+            p = hourly_prices(r)
+            if not p or not any(abs(v) > 1e-9 for v in p):
+                continue
+            total = [x + y for x, y in zip(total, p)]
+            parts.append(r.get("Note") or r.get("Description") or "")
         row = {
-            "netselskab": owner, "gln": gln, "tarif": r.get("Note") or r.get("Description") or "",
-            "kode": r.get("ChargeTypeCode") or "", "gyldig_fra": (r.get("ValidFrom") or "")[:10],
-            "lavlast_kr": f"{p[3]:.5f}", "hoejlast_kr": f"{p[10]:.5f}", "spidslast_kr": f"{p[18]:.5f}",
-            "abonnement_kr_md": sub,
+            "netselskab": owner, "gln": gln, "tarif": " + ".join(parts),
+            "kode": main.get("ChargeTypeCode") or "", "gyldig_fra": (main.get("ValidFrom") or "")[:10],
+            "lavlast_kr": f"{total[3]:.5f}", "hoejlast_kr": f"{total[10]:.5f}", "spidslast_kr": f"{total[18]:.5f}",
         }
-        row.update({f"t{h:02d}": f"{p[h]:.5f}" for h in range(24)})
+        row.update({f"t{h:02d}": f"{total[h]:.5f}" for h in range(24)})
         rows.append(row)
-        log.append(f"{owner}: '{row['tarif']}' ({row['kode']}) spids {float(row['spidslast_kr']) * 125:.2f} øre inkl. moms")
+        log.append(f"{owner}: {float(row['lavlast_kr']) * 125:.2f}/{float(row['hoejlast_kr']) * 125:.2f}/"
+                   f"{float(row['spidslast_kr']) * 125:.2f} øre inkl. moms ({row['tarif']})")
     # Diagnose: alle gældende D03-poster for udvalgte netselskaber (DIAG="navn1,navn2")
     import os
     diag = [d.strip().lower() for d in os.environ.get("DIAG", "").split(",") if d.strip()]
     if diag:
         picked = {r["gln"] for r in rows}
-        missing = sorted({o for (g, o) in by_owner if g not in picked and any(x.get("ChargeType") == "D03" for x in by_owner[(g, o)])})
+        missing = sorted({o for (g, o) in by_owner if g not in picked})
         annotate("notice", "Netselskaber uden valgt tarif", "; ".join(missing)[:3900])
         chunks, cur = [], ""
         for (gln, owner), lst in sorted(by_owner.items(), key=lambda kv: kv[0][1] or ""):
@@ -449,9 +453,11 @@ def update_tariffs(now: datetime) -> None:
             annotate("warning", f"DIAG {i + 1}", c)
     if rows:
         write_csv(DATA / "nettariffer.csv",
-                  ["netselskab", "gln", "tarif", "kode", "gyldig_fra", "lavlast_kr", "hoejlast_kr", "spidslast_kr",
-                   "abonnement_kr_md"] + [f"t{h:02d}" for h in range(24)], rows)
-    annotate("notice", f"Nettariffer: {len(rows)} netselskaber", "\n".join(log)[:3900])
+                  ["netselskab", "gln", "tarif", "kode", "gyldig_fra", "lavlast_kr", "hoejlast_kr", "spidslast_kr"]
+                  + [f"t{h:02d}" for h in range(24)], rows)
+    text_log = "\n".join(log)
+    for i in range(0, min(len(text_log), 7600), 3800):
+        annotate("notice", f"Nettariffer: {len(rows)} netselskaber ({i // 3800 + 1})", text_log[i:i + 3800])
 
 
 # ------------------------------------------------------------ datasæt-manifest

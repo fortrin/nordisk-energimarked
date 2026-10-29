@@ -279,7 +279,7 @@ details.mo-sources summary { cursor: pointer; }
 
     <div class="mo-card" id="nettariffer">
       <h3>Nettarif pr. netselskab</h3>
-      <p class="mo-note">Gældende nettarif C (husholdninger og mindre virksomheder), øre/kWh inkl. moms. Abonnement i kr./md. inkl. moms. Klik på en kolonne for at sortere.</p>
+      <p class="mo-note">Gældende nettarif C (husholdninger og mindre virksomheder), øre/kWh inkl. moms. Hvor netselskabet deler tariffen op (fx regional tarif, rabat eller overliggende net), er posterne lagt sammen – se kolonnen "Poster i Datahub". Netabonnementet er ikke med. Klik på en kolonne for at sortere.</p>
       <div class="mo-tablewrap">
         <table class="mo-table mo-sortable" data-table="net">
           <thead><tr>
@@ -287,9 +287,8 @@ details.mo-sources summary { cursor: pointer; }
             <th class="num" data-sort="lav"><button type="button">Lavlast</button></th>
             <th class="num" data-sort="hoej"><button type="button">Højlast</button></th>
             <th class="num" data-sort="spids" aria-sort="descending"><button type="button">Spidslast</button></th>
-            <th class="num mo-hide-narrow" data-sort="abo"><button type="button">Abonnement</button></th>
             <th class="mo-hide-narrow" data-sort="fra"><button type="button">Gyldig fra</button></th>
-            <th class="mo-hide-narrow">Tarif i Datahub</th>
+            <th class="mo-hide-narrow">Poster i Datahub</th>
           </tr></thead>
           <tbody data-draw="net_body" data-source="nettariffer"></tbody>
         </table>
@@ -808,12 +807,12 @@ details.mo-sources summary { cursor: pointer; }
   };
   dash.draw('net_body', (tb) => {
     tb.replaceChildren();
-    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 125, hoej: N(r.hoejlast_kr) * 125, spids: N(r.spidslast_kr) * 125, abo: N(r.abonnement_kr_md) == null ? null : N(r.abonnement_kr_md) * 1.25, fra: r.gyldig_fra }));
+    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 125, hoej: N(r.hoejlast_kr) * 125, spids: N(r.spidslast_kr) * 125, fra: r.gyldig_fra }));
     const sel = curNet();
     list.sort(sorter(sortState.net)).forEach((x) => {
       const tr = document.createElement('tr'); if (sel && x.r === sel) tr.className = 'mo-top';
       cell(tr, x.netselskab); cell(tr, f2(x.lav), 'num'); cell(tr, f2(x.hoej), 'num'); cell(tr, f2(x.spids), 'num');
-      cell(tr, dash_(x.abo, f2), 'num mo-hide-narrow'); cell(tr, x.fra ? fmtDate(x.fra) : '', 'mo-hide-narrow'); cell(tr, x.r.tarif, 'mo-hide-narrow');
+      cell(tr, x.fra ? fmtDate(x.fra) : '', 'mo-hide-narrow'); cell(tr, x.r.tarif, 'mo-hide-narrow');
       tb.append(tr);
     });
   });
