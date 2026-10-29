@@ -434,7 +434,7 @@ def update_tariffs(now: datetime) -> None:
             if not any(d in (owner or "").lower() for d in diag):
                 continue
             for r in sorted(lst, key=lambda x: x.get("ValidFrom") or ""):
-                if r.get("ChargeType") not in ("D03", "D01"):
+                if r.get("ChargeType") != "D03":
                     continue
                 p = hourly_prices(r) or [0.0] * 24
                 line = (f"{owner} | {r.get('ChargeType')} | {r.get('Note')} | {r.get('Description')} | {r.get('ChargeTypeCode')} | "
