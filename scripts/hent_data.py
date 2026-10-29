@@ -435,10 +435,12 @@ def update_tariffs(now: datetime) -> None:
         annotate("notice", "Netselskaber uden valgt tarif", "; ".join(missing)[:3900])
         chunks, cur = [], ""
         for (gln, owner), lst in sorted(by_owner.items(), key=lambda kv: kv[0][1] or ""):
-            if not any(d in (owner or "").lower() for d in diag):
+            if diag != ["*"] and not any(d in (owner or "").lower() for d in diag):
                 continue
             for r in sorted(lst, key=lambda x: x.get("ValidFrom") or ""):
                 if r.get("ChargeType") != "D03":
+                    continue
+                if os.environ.get("DIAG_FILTER") and not re.search(os.environ["DIAG_FILTER"], text(r)):
                     continue
                 p = hourly_prices(r) or [0.0] * 24
                 line = (f"{owner} | {r.get('ChargeType')} | {r.get('Note')} | {r.get('Description')} | {r.get('ChargeTypeCode')} | "
@@ -449,7 +451,7 @@ def update_tariffs(now: datetime) -> None:
                 cur += line
         if cur:
             chunks.append(cur)
-        for i, c in enumerate(chunks[:9]):
+        for i, c in enumerate(chunks[:40]):
             annotate("warning", f"DIAG {i + 1}", c)
     if rows:
         write_csv(DATA / "nettariffer.csv",

@@ -11,6 +11,10 @@ on:
         description: "Diagnose: kommaseparerede netselskabsnavne (valgfri)"
         required: false
         default: ""
+      diag_filter:
+        description: "Diagnose: regex på tarifnavn (valgfri)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -35,6 +39,7 @@ jobs:
         id: hent
         env:
           DIAG: ${{ github.event.inputs.diag }}
+          DIAG_FILTER: ${{ github.event.inputs.diag_filter }}
         run: python3 scripts/hent_data.py
 
       - name: Kontrollér datafilerne
