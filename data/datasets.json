@@ -76,7 +76,7 @@
       "titel": "Profilvægtede spotpriser",
       "beskrivelse": "Månedlig spotpris i DK1 og DK2 vægtet efter typiske erhvervsprofiler (døgndrift, kontor, butik, industri i 1 og 2 skift) og profilfaktoren i forhold til den flade pris. Beregnet af kvarters- og timepriserne fra Energi Data Service.",
       "fil": "data/spot_profil_maaned.csv",
-      "opdateret": "venter på første kørsel",
+      "opdateret": "2026-10-29",
       "af": "GitHub Action",
       "opdateres": "Hverdage"
     }
