@@ -1,1 +1,4 @@
 id,navn,kr_kwh,gyldig_fra,note
+elafgift,Elafgift,0.00800,2026-01-01,Elafgift
+nettarif,Energinet nettarif (transmission),0.04300,2026-01-01,Transmissions nettarif
+systemtarif,Energinet systemtarif,0.07200,2026-01-01,Systemtarif
