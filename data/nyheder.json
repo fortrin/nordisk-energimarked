@@ -1,0 +1,122 @@
+[
+ {
+  "id": "2026-10-29-dk-1",
+  "dato": "2026-10-29",
+  "region": "Danmark",
+  "rang": 1,
+  "titel": "Elpriserne er steget over 50 % i år – men elregningen falder",
+  "kilde": "DK Havenergi (DOI)",
+  "url": "https://www.doi.dk/havenergi/artikel/trods-markant-hoejere-stroempriser-falder-danskernes-elregning",
+  "publiceret": "2026-10-29",
+  "resume": "Spotprisen på el er steget med mere end 50 % i år, men den midlertidige nedsættelse af elafgiften til EU's minimum (0,8 øre/kWh ekskl. moms i 2026–2027) betyder, at husholdningerne alligevel ventes at betale mindre end sidste år.",
+  "betydning": "Afgiftslettelsen skjuler en stor stigning i selve elprisen. Når afgiften vender tilbage i 2028, slår prisniveauet fuldt igennem – relevant for budgetter og fastprisbeslutninger."
+ },
+ {
+  "id": "2026-10-29-dk-2",
+  "dato": "2026-10-29",
+  "region": "Danmark",
+  "rang": 2,
+  "titel": "Energinet tildeler elnetkapacitet i november – husholdninger og kritisk infrastruktur først",
+  "kilde": "Energinet (via Ritzau)",
+  "url": "https://via.ritzau.dk/pressemeddelelse/15237969/energinet-gor-klar-til-prioriteret-kapacitetstildeling-og-tager-nye-virkemidler-i-brug?publisherId=10304728&lang=da",
+  "publiceret": "2026-10-21",
+  "resume": "Flere hundrede ansøgere får i november svar på nettilslutning. Kategori 1 (husholdninger, små virksomheder og kritiske samfundsfunktioner) prioriteres, og Energinet venter, at de fleste modne store forbrugsprojekter også får kapacitet, mens produktion begrænses regionalt. Forsyningstilsynet har godkendt kravene til projekternes modenhed.",
+  "betydning": "Virksomheder med elektrificering, ladeparker eller nye anlæg skal være klar til tidsfrister og modenhedskrav – nettilslutning er en flaskehals."
+ },
+ {
+  "id": "2026-10-29-dk-3",
+  "dato": "2026-10-29",
+  "region": "Danmark",
+  "rang": 3,
+  "titel": "Vintertariffer: Spidslasttariffen kl. 17–21 er steget ca. 131 % hos de fleste netselskaber",
+  "kilde": "eltjek24",
+  "url": "https://eltjek24.dk/artikler/nyheder/fra-oktober-bliver-prisen-paa-stroemtransport-dyrere-se-hvor-meget-din-nettarif-stiger/",
+  "publiceret": "2026-10-19",
+  "resume": "Fra 1. oktober hæver 28 af 33 netselskaber nettariffen, og spidslasten kl. 17–21 rammes hårdest. Hos Radius er den 119,45 øre/kWh inkl. moms, hos Cerius 129,75 og hos N1 98,84 – mod 11–14 øre om natten.",
+  "betydning": "Flytning af forbrug væk fra kl. 17–21 er nu den største enkeltbesparelse for kunder med fleksibelt forbrug. Se tabellen under Afgifter & nettariffer."
+ },
+ {
+  "id": "2026-10-29-dk-4",
+  "dato": "2026-10-29",
+  "region": "Danmark",
+  "rang": 4,
+  "titel": "Større udsving i elprisen: flere dage med over 1 kr. mellem billigste og dyreste time",
+  "kilde": "Dansk Fjernvarme / Norlys",
+  "url": "https://danskfjernvarme.dk/aktuelt/nyheder/2026/elpriserne-er-steget-over-30-procent-paa-et-aar",
+  "publiceret": "2026-10-11",
+  "resume": "Gennemsnitsprisen for januar–september 2026 var ca. 80 øre/kWh i både DK1 og DK2, 34 % over samme periode i 2025. Norlys peger på gasprisen efter konflikten om Hormuzstrædet, og antallet af dage med over 1 kr./kWh mellem dagens billigste og dyreste time er steget markant.",
+  "betydning": "Spotprodukter med fleksibelt forbrug vinder, mens kunder med fast forbrug i dyre timer bliver ramt. Det styrker argumentet for timeafregnede aftaler og styring af forbrug."
+ },
+ {
+  "id": "2026-10-29-dk-5",
+  "dato": "2026-10-29",
+  "region": "Danmark",
+  "rang": 5,
+  "titel": "Regeringen afsætter 3,2 mia. kr. til elektrificering frem til 2030",
+  "kilde": "Klima-, Energi- og Forsyningsministeriet / Green Power Denmark",
+  "url": "https://via.ritzau.dk/pressemeddelelse/15217500/green-power-denmark-staerkt-at-regeringen-skubber-til-elektrificeringen?publisherId=13560944&lang=da",
+  "publiceret": "2026-10-09",
+  "resume": "Finanslovsforslaget indeholder 3,2 mia. kr. til at fremme elektrificering, bl.a. udskiftning af olie- og gasfyr med varmepumper. Green Power Denmark roser udspillet og opgør energikrisens merpris for husholdninger og virksomheder til 13 mia. kr.",
+  "betydning": "Tilskudsmidler til elektrificering kan gøre varmepumper og procesel mere rentable for erhvervskunder – hold øje med puljernes åbning."
+ },
+ {
+  "id": "2026-10-29-nord-1",
+  "dato": "2026-10-29",
+  "region": "Norden",
+  "rang": 1,
+  "titel": "Statkraft: Markant højere nordiske elpriser løftede Q3 trods lavere produktion",
+  "kilde": "Statkraft (GlobeNewswire)",
+  "url": "https://globenewswire.com/news-release/2026/10/29/3390916/0/no/sterke-resultater-til-tross-for-lavere-produksjon.html",
+  "publiceret": "2026-10-29",
+  "resume": "Statkraft producerede 14,7 TWh i 3. kvartal (15,8 TWh året før), og produktionen i Norge faldt ca. 13 %. Højere priser gav et underliggende EBITDA på 5,2 mia. NOK mod 3,1 mia. NOK året før.",
+  "betydning": "Lav vandkraftproduktion og høje priser bekræfter et stramt nordisk marked på vej ind i vinteren."
+ },
+ {
+  "id": "2026-10-29-nord-2",
+  "dato": "2026-10-29",
+  "region": "Norden",
+  "rang": 2,
+  "titel": "Norgespris kostede staten 19,8 mia. NOK det første år – kunderne skal tilmelde sig igen for 2027",
+  "kilde": "Energidepartementet (via document.news)",
+  "url": "https://www.document.news/2026/10/29/ntb-echoes-government-line-on-norgespris-norways-electricity-subsidy-scheme",
+  "publiceret": "2026-10-29",
+  "resume": "Den norske fastprisordning Norgespris har udbetalt ca. 19,8 mia. NOK til husholdninger og fritidshuse frem til 1. oktober 2026. Aftalerne udløber 31. december, og regeringen har foreslået at hæve satsen fra 0,40 til 0,45 NOK/kWh i 2027.",
+  "betydning": "Ordningen dæmper norske husholdningers prisfølsomhed, mens erhverv stadig handler til spot – det påvirker efterspørgslen og flowet mod Danmark."
+ },
+ {
+  "id": "2026-10-29-nord-3",
+  "dato": "2026-10-29",
+  "region": "Norden",
+  "rang": 3,
+  "titel": "Fingrid: Finsk elforbrug +5 % – nettariffer stiger 4 % fra 1. januar 2027",
+  "kilde": "Fingrid (GlobeNewswire)",
+  "url": "https://www.globenewswire.com/news-release/2026/10/29/3391254/0/en/fingrid-group-management-s-review-1-1-30-9-2026.html",
+  "publiceret": "2026-10-29",
+  "resume": "Finsk elforbrug steg 5,0 % til 64,8 TWh i januar–september, drevet af datacentre og elkedler. Fingrid hæver gebyrerne for transmissionsnettet med 4 % fra 2027, men fritager forbrug og produktion for volumengebyrer i oktober og november 2026. Investeringsplanen er på 5,2 mia. euro.",
+  "betydning": "Hurtigt stigende finsk efterspørgsel og nye forbindelser ændrer prisforskellene i Norden over de kommende år."
+ },
+ {
+  "id": "2026-10-29-nord-4",
+  "dato": "2026-10-29",
+  "region": "Norden",
+  "rang": 4,
+  "titel": "Statkraft og Borregaard indgår 10-årig kraftaftale",
+  "kilde": "Statkraft (GlobeNewswire)",
+  "url": "https://globenewswire.com/news-release/2026/10/29/3391006/0/no/statkraft-og-borregaard-inng%C3%A5r-10-%C3%A5rig-kraftavtale.html",
+  "publiceret": "2026-10-29",
+  "resume": "Statkraft leverer 445 GWh til Borregaard fra 1. november 2026 til 2036, svarende til ca. 5 % af virksomhedens elforbrug. Aftalen supplerer en aftale fra 2019.",
+  "betydning": "Endnu et eksempel på, at energitunge virksomheder sikrer sig langsigtede PPA'er i et marked med høje og svingende priser."
+ },
+ {
+  "id": "2026-10-29-nord-5",
+  "dato": "2026-10-29",
+  "region": "Norden",
+  "rang": 5,
+  "titel": "Ny mekanisme begrænser flowvending på Fenno-Skan fra 17. november",
+  "kilde": "Fingrid",
+  "url": "https://www.fingrid.fi/en/news/news/2026/fingrid-secures-the-transmission-capacity-of-the-fenno-skan-interconnectors-between-finland-and-sweden-with-a-new-mechanism",
+  "publiceret": "2026-10-16",
+  "resume": "Fingrid og Svenska kraftnät indfører en mekanisme, der forhindrer, at flowet på Fenno-Skan-kablerne mellem Finland og Sverige skifter retning inden for en time. Day-ahead-niveauet fastlægges pr. time, mens intraday stadig kan justere i 15-minutters trin.",
+  "betydning": "Sikrer overførselskapaciteten mellem SE3 og FI i vinter og kan påvirke prisdannelsen i kvarter med store prisspring."
+ }
+]

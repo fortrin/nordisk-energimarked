@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nordisk energimarked</title>
+<meta name="description" content="Spotpriser i alle nordiske prisområder, danske nettariffer og afgifter, elselskabernes gebyrer og dagens energinyheder.">
+<link rel="stylesheet" href="css/tema.css">
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="js/dash.js"></script>
+</head>
+<body>
+<main id="dash-root">
+<style>
+.mo { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.mo-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+.mo-lede { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 60rem; line-height: 1.5; }
+.mo .mo-lede b, .mo .mo-calc b { color: var(--color-fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.mo-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); border-bottom: 1px solid var(--color-border-line); }
+.mo-tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); font: inherit; font-size: var(--cds-font-size-body); color: var(--color-fg-muted); cursor: pointer; min-height: 44px; }
+.mo-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.mo-page { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.mo-page[hidden] { display: none; }
+.mo-h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.mo-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.mo-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: flex; flex-direction: column; gap: var(--cds-gap-xs); }
+.mo-tile-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mo-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.mo-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.mo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.mo-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.mo-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.mo-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; line-height: 1.45; }
+.mo-chart { position: relative; min-height: 260px; }
+.mo-chart.mo-short { min-height: 160px; }
+.mo-chart svg { display: block; overflow: visible; }
+.mo-chart text { fill: var(--color-fg-muted); font-family: var(--font-anthropic-sans); }
+.mo-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mo-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.mo-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.mo-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+.mo-tip-head { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.mo-tip-row { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.mo-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: inherit; height: 100%; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mo-fail i { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); display: inline-block; }
+.mo-tablewrap { overflow: auto; max-height: 34rem; }
+.mo-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.mo-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: bottom; }
+.mo-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; line-height: 1.4; }
+.mo-table .num { text-align: right; white-space: nowrap; }
+.mo-table th button { appearance: none; background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; min-height: 28px; }
+.mo-table a { color: var(--color-fg); }
+.mo-wide { min-width: 16rem; }
+.mo-barcell { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.mo-barcell span.b { height: 8px; border-radius: 2px; display: inline-block; }
+.mo-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; font-size: var(--cds-font-size-caption); }
+.mo-controls select, .mo-calc input { font: inherit; font-size: var(--cds-font-size-body); padding: 6px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-height: 40px; }
+.mo-calc { display: flex; flex-direction: column; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-body); }
+.mo-calc label { display: flex; flex-direction: column; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); max-width: 16rem; }
+.mo-calc p { margin: 0; line-height: 1.5; }
+.mo-sources { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.6; }
+.mo-sources a { color: var(--color-fg-muted); }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+[data-dash-source-state=empty] { color: transparent; }
+.mo-finder { display: grid; grid-template-columns: minmax(min(100%, 16rem), 18rem) minmax(0, 1fr); gap: var(--cds-gap-md); align-items: start; }
+@media (max-width: 760px) { .mo-finder { grid-template-columns: 1fr; } }
+.mo-col { display: flex; flex-direction: column; gap: var(--cds-gap-md); min-width: 0; }
+.mo-col .mo-card[hidden], .mo-alt[hidden] { display: none; }
+.mo-form label { display: flex; flex-direction: column; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mo-form select { font: inherit; font-size: var(--cds-font-size-body); padding: 6px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-height: 40px; }
+.mo-form input[type=range] { width: 100%; min-height: 32px; }
+.mo-range-ends { display: flex; justify-content: space-between; }
+.mo-form .mo-check { flex-direction: row; align-items: center; gap: 8px; color: var(--color-fg); font-size: var(--cds-font-size-body); min-height: 32px; }
+.mo-reset { align-self: flex-start; font: inherit; font-size: var(--cds-font-size-caption); padding: 6px 12px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); cursor: pointer; min-height: 36px; }
+.mo-alt { margin: 0; line-height: 1.5; }
+.mo-alt b { font-weight: 600; }
+.mo-table tr.mo-top td { font-weight: 600; }
+@media (max-width: 640px) { .mo-hide-narrow { display: none; } }
+
+.mo-news { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.mo-news li { line-height: 1.45; }
+.mo-news-title { font-weight: var(--cds-font-weight-medium); }
+.mo-news-title a { color: var(--color-fg); }
+.mo-news-meta { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mo-news p { margin: 4px 0 0; font-size: var(--cds-font-size-body); }
+.mo-news .mo-news-why { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.mo-news-short { gap: var(--cds-gap-sm); }
+.mo-controls label { display: flex; flex-direction: column; gap: 4px; color: var(--color-fg-muted); }
+.mo-table tr.mo-top td { font-weight: 600; }
+details.mo-sources summary { cursor: pointer; }
+</style>
+
+<div class="mo">
+  <header class="mo-head" id="top">
+    <h1>Nordisk energimarked</h1>
+    <p class="mo-lede">Den <b data-draw="dagtxt" data-which="idag">—</b> koster strøm på elbørsen i gennemsnit <b data-draw="spotval" data-area="DK1" data-which="idag">—</b> øre/kWh i Vestdanmark og <b data-draw="spotval" data-area="DK2" data-which="idag">—</b> øre/kWh i Østdanmark (ekskl. moms, tariffer og afgifter). Billigst i Norden er <b data-draw="ext" data-kind="min">—</b>, dyrest er <b data-draw="ext" data-kind="max">—</b>.</p>
+  </header>
+
+  <nav class="mo-tabs" role="tablist" aria-label="Sider">
+    <button class="mo-tab" id="tab-overblik" role="tab" data-page="overblik" aria-selected="true">Overblik</button>
+    <button class="mo-tab" id="tab-priser" role="tab" data-page="priser" aria-selected="false">Elpriser i Norden</button>
+    <button class="mo-tab" id="tab-afgifter" role="tab" data-page="afgifter" aria-selected="false">Afgifter og nettariffer</button>
+    <button class="mo-tab" id="tab-elselskaber" role="tab" data-page="elselskaber" aria-selected="false">Elselskaber</button>
+    <button class="mo-tab" id="tab-nyheder" role="tab" data-page="nyheder" aria-selected="false">Nyheder</button>
+  </nav>
+
+  <!-- OVERBLIK -->
+  <section class="mo-page" id="overblik" role="tabpanel" aria-labelledby="tab-overblik">
+    <div class="mo-tiles" id="noegletal">
+      <div class="mo-tile" data-source="spot_daglig">
+        <span class="mo-tile-label">DK1 Vestdanmark · <span data-draw="dagtxt" data-which="idag">—</span></span>
+        <span class="mo-big"><span data-draw="spotval" data-area="DK1" data-which="idag">—</span> øre</span>
+        <span class="mo-sub">I morgen: <span data-draw="spotval" data-area="DK1" data-which="imorgen" data-unit=" øre">—</span></span>
+      </div>
+      <div class="mo-tile" data-source="spot_daglig">
+        <span class="mo-tile-label">DK2 Østdanmark · <span data-draw="dagtxt" data-which="idag">—</span></span>
+        <span class="mo-big"><span data-draw="spotval" data-area="DK2" data-which="idag">—</span> øre</span>
+        <span class="mo-sub">I morgen: <span data-draw="spotval" data-area="DK2" data-which="imorgen" data-unit=" øre">—</span></span>
+      </div>
+      <div class="mo-tile" data-source="spot_daglig">
+        <span class="mo-tile-label">DK1 · gennemsnit seneste 30 dage</span>
+        <span class="mo-big"><span data-draw="spotavg" data-area="DK1" data-days="30">—</span> øre</span>
+        <span class="mo-sub">Seneste 365 dage: <span data-draw="spotavg" data-area="DK1" data-days="365" data-unit=" øre">—</span></span>
+      </div>
+      <div class="mo-tile" data-source="spot_daglig">
+        <span class="mo-tile-label">Billigste område i Norden i dag</span>
+        <span class="mo-big" data-draw="ext" data-kind="min">—</span>
+        <span class="mo-sub">Dyreste: <span data-draw="ext" data-kind="max">—</span></span>
+      </div>
+    </div>
+    <p class="mo-note">Alle spotpriser er day-ahead-priser i øre/kWh ekskl. moms, tariffer og afgifter. Priserne for i morgen kommer kl. ca. 13 og hentes hver hverdag.</p>
+
+    <div class="mo-grid">
+      <div class="mo-card" id="omraader-idag">
+        <h3>Gennemsnitspris pr. prisområde · <span data-draw="dagtxt" data-which="idag">—</span></h3>
+        <p class="mo-note">Danske områder fremhævet.</p>
+        <div class="mo-chart" data-draw="ch_areas" data-source="spot_daglig omraader"></div>
+      </div>
+      <div class="mo-card" id="lande-30d">
+        <h3>Udvikling seneste 30 dage – ét område pr. land</h3>
+        <p class="mo-note">DK1, NO1 (Oslo), SE3 (Stockholm) og FI. Døgngennemsnit i øre/kWh.</p>
+        <div class="mo-chart" data-draw="ch_countries" data-source="spot_daglig"></div>
+      </div>
+    </div>
+
+    <div class="mo-grid">
+      <div class="mo-card" id="nyheder-dk-kort">
+        <h3>Top 5 nyheder – Danmark</h3>
+        <p class="mo-note" data-draw="newsdate" data-source="nyheder">—</p>
+        <ol class="mo-news mo-news-short" data-draw="news" data-region="Danmark" data-short="1" data-source="nyheder"></ol>
+      </div>
+      <div class="mo-card" id="nyheder-norden-kort">
+        <h3>Top 5 nyheder – Norden</h3>
+        <p class="mo-note" data-draw="newsdate" data-source="nyheder">—</p>
+        <ol class="mo-news mo-news-short" data-draw="news" data-region="Norden" data-short="1" data-source="nyheder"></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ELPRISER -->
+  <section class="mo-page" id="priser" role="tabpanel" aria-labelledby="tab-priser" hidden>
+    <div class="mo-controls">
+      <label>Land
+        <select class="mo-p-land" aria-label="Land">
+          <option value="Alle">Alle lande</option>
+          <option value="Danmark">Danmark</option>
+          <option value="Norge">Norge</option>
+          <option value="Sverige">Sverige</option>
+          <option value="Finland">Finland</option>
+        </select>
+      </label>
+      <label>Periode
+        <select class="mo-p-periode" aria-label="Periode">
+          <option value="30">30 dage</option>
+          <option value="90">90 dage</option>
+          <option value="365">12 måneder</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="mo-card" id="omraadetabel">
+      <h3>Prisområder</h3>
+      <p class="mo-note">Gennemsnit i øre/kWh ekskl. moms. Negative timer er antal timer med negativ pris de seneste 30 dage.</p>
+      <div class="mo-tablewrap">
+        <table class="mo-table">
+          <thead><tr>
+            <th>Område</th>
+            <th class="mo-hide-narrow">Navn</th>
+            <th class="num">I dag</th>
+            <th class="num">I morgen</th>
+            <th class="num">7 dage</th>
+            <th class="num">30 dage</th>
+            <th class="num">12 mdr.</th>
+            <th class="num mo-hide-narrow">Negative timer</th>
+          </tr></thead>
+          <tbody data-draw="area_body" data-source="spot_daglig omraader"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="mo-card" id="doegnpriser">
+      <h3>Døgnpris pr. område</h3>
+      <p class="mo-note">Døgngennemsnit i øre/kWh ekskl. moms.</p>
+      <div class="mo-chart" data-draw="ch_daily" data-source="spot_daglig"></div>
+    </div>
+
+    <div class="mo-card" id="timepriser">
+      <h3>Time for time</h3>
+      <div class="mo-controls">
+        <label>Dag
+          <select class="mo-p-dag" data-draw="dag_sel" data-source="spot_time" aria-label="Dag"></select>
+        </label>
+      </div>
+      <p class="mo-note">Gennemsnit af kvartersprisen i hver time, øre/kWh ekskl. moms.</p>
+      <div class="mo-chart" data-draw="ch_hourly" data-source="spot_time"></div>
+    </div>
+
+    <div class="mo-card" id="maaneder">
+      <h3>Månedsgennemsnit</h3>
+      <p class="mo-note">Øre/kWh ekskl. moms. Seneste 13 måneder.</p>
+      <div class="mo-tablewrap">
+        <table class="mo-table" data-draw="month_table" data-source="spot_maaned"></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- AFGIFTER -->
+  <section class="mo-page" id="afgifter" role="tabpanel" aria-labelledby="tab-afgifter" hidden>
+    <p class="mo-lede">En dansk elregning består af spotprisen, elselskabets tillæg og abonnement, netselskabets tarif (som afhænger af tidspunktet), Energinets tariffer, elafgiften og moms. Elafgiften er midlertidigt sat ned til EU's minimum i 2026 og 2027.</p>
+
+    <div class="mo-controls">
+      <label>Netselskab
+        <select class="mo-p-net" data-draw="net_sel" data-source="nettariffer" aria-label="Netselskab"></select>
+      </label>
+      <label>Prisområde
+        <select class="mo-p-dkarea" aria-label="Prisområde">
+          <option value="DK1">DK1 Vestdanmark</option>
+          <option value="DK2">DK2 Østdanmark</option>
+        </select>
+      </label>
+      <label>Elselskab (tillæg)
+        <select class="mo-p-sup" data-draw="sup_sel" data-source="elselskaber" aria-label="Elselskab"></select>
+      </label>
+    </div>
+
+    <div class="mo-card" id="sammensaetning" data-source="spot_time nettariffer afgifter elselskaber">
+      <h3>Hvad koster en kWh? · <span data-draw="dagtxt" data-which="time">—</span></h3>
+      <p class="mo-note">Gennemsnit for tidsrummet, øre/kWh inkl. moms. Abonnementer er ikke med.</p>
+      <div class="mo-chart mo-short" data-draw="ch_stack"></div>
+      <div class="mo-legend" data-draw="stack_legend"></div>
+    </div>
+
+    <div class="mo-grid">
+      <div class="mo-card" id="offentlige">
+        <h3>Elafgift og Energinets tariffer</h3>
+        <p class="mo-note">Ens for alle danske elkunder.</p>
+        <div class="mo-tablewrap">
+          <table class="mo-table">
+            <thead><tr><th>Afgift / tarif</th><th class="num">Øre/kWh ekskl. moms</th><th class="num">Inkl. moms</th><th>Gyldig fra</th></tr></thead>
+            <tbody data-draw="afg_body" data-source="afgifter"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="mo-card" id="tidsperioder">
+        <h3>Netselskabernes tidsperioder</h3>
+        <p class="mo-note">De fleste netselskaber bruger samme tre perioder. Vintertariffen gælder oktober–marts og er højest kl. 17–21.</p>
+        <div class="mo-tablewrap">
+          <table class="mo-table">
+            <thead><tr><th>Periode</th><th>Tidsrum</th></tr></thead>
+            <tbody>
+              <tr><td>Lavlast</td><td>kl. 00–06</td></tr>
+              <tr><td>Højlast</td><td>kl. 06–17 og 21–24</td></tr>
+              <tr><td>Spidslast</td><td>kl. 17–21</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="mo-card" id="nettariffer">
+      <h3>Nettarif pr. netselskab</h3>
+      <p class="mo-note">Gældende nettarif C (husholdninger og mindre virksomheder), øre/kWh inkl. moms. Abonnement i kr./md. inkl. moms. Klik på en kolonne for at sortere.</p>
+      <div class="mo-tablewrap">
+        <table class="mo-table mo-sortable" data-table="net">
+          <thead><tr>
+            <th data-sort="netselskab"><button type="button">Netselskab</button></th>
+            <th class="num" data-sort="lav"><button type="button">Lavlast</button></th>
+            <th class="num" data-sort="hoej"><button type="button">Højlast</button></th>
+            <th class="num" data-sort="spids" aria-sort="descending"><button type="button">Spidslast</button></th>
+            <th class="num mo-hide-narrow" data-sort="abo"><button type="button">Abonnement</button></th>
+            <th class="mo-hide-narrow" data-sort="fra"><button type="button">Gyldig fra</button></th>
+            <th class="mo-hide-narrow">Tarif i Datahub</th>
+          </tr></thead>
+          <tbody data-draw="net_body" data-source="nettariffer"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ELSELSKABER -->
+  <section class="mo-page" id="elselskaber" role="tabpanel" aria-labelledby="tab-elselskaber" hidden>
+    <p class="mo-lede">Spotprisen, nettariffen og afgifterne er de samme uanset elselskab. Det, der adskiller selskaberne, er abonnement, tillæg på spotprisen og gebyrer. Tabellen viser hovedproduktet med variabel pris hos 15 af de største elselskaber.</p>
+    <div class="mo-controls mo-calc">
+      <label>Årligt forbrug (kWh)
+        <input class="mo-p-forbrug" type="number" min="0" step="500" inputmode="numeric" aria-label="Årligt forbrug i kWh">
+      </label>
+    </div>
+
+    <div class="mo-card" id="selskabsomkostning" data-source="elselskaber">
+      <h3>Elselskabets del af regningen pr. år ved <span data-draw="forbrug_txt">—</span> kWh</h3>
+      <p class="mo-note">Abonnement × 12 (efter forbrugstrin, hvor selskabet har det) + spottillæg × forbrug + Betalingsservice-gebyr. Spotpris, nettarif, afgifter og moms er ikke med, da de er ens hos alle.</p>
+      <div class="mo-chart" data-draw="ch_suppliers"></div>
+    </div>
+
+    <div class="mo-card" id="gebyrtabel">
+      <h3>Priser og gebyrer</h3>
+      <p class="mo-note">Alle beløb inkl. moms. Klik på en kolonne for at sortere.</p>
+      <div class="mo-tablewrap">
+        <table class="mo-table mo-sortable" data-table="sup">
+          <thead><tr>
+            <th data-sort="selskab"><button type="button">Elselskab</button></th>
+            <th data-sort="produkt"><button type="button">Produkt</button></th>
+            <th class="num" data-sort="abo"><button type="button">Abonnement kr./md.</button></th>
+            <th class="num" data-sort="tillaeg"><button type="button">Spottillæg øre/kWh</button></th>
+            <th class="num" data-sort="aar" aria-sort="ascending"><button type="button">Pr. år</button></th>
+            <th data-sort="binding"><button type="button">Binding</button></th>
+            <th class="num mo-hide-narrow" data-sort="bs"><button type="button">Betalingsservice</button></th>
+            <th class="num mo-hide-narrow" data-sort="ik"><button type="button">Indbetalingskort</button></th>
+            <th class="mo-wide mo-hide-narrow">Øvrige gebyrer og noter</th>
+            <th class="mo-hide-narrow">Kilde</th>
+          </tr></thead>
+          <tbody data-draw="sup_body" data-source="elselskaber"></tbody>
+        </table>
+      </div>
+      <p class="mo-note">Kilde: primært Strømligning (stromligning.dk), som kontrollerer priserne med selskaberne, suppleret med selskabernes egne sider. "Sidst kontrolleret" vises i kildekolonnen, hvor den er oplyst. Priser kan ændre sig – tjek altid hos selskabet.</p>
+    </div>
+  </section>
+
+  <!-- NYHEDER -->
+  <section class="mo-page" id="nyheder" role="tabpanel" aria-labelledby="tab-nyheder" hidden>
+    <div class="mo-controls">
+      <label>Dato
+        <select class="mo-p-nyhed" data-draw="news_sel" data-source="nyheder" aria-label="Dato"></select>
+      </label>
+    </div>
+    <p class="mo-note">Fem udvalgte nyheder om el, gas og energipolitik i Danmark og fem fra resten af Norden – opdateret hver hverdag morgen. Resuméerne er skrevet af Claude; læs hele artiklen hos kilden.</p>
+    <div class="mo-grid">
+      <div class="mo-card" id="nyheder-dk">
+        <h3>Danmark</h3>
+        <ol class="mo-news" data-draw="news" data-region="Danmark" data-source="nyheder"></ol>
+      </div>
+      <div class="mo-card" id="nyheder-norden">
+        <h3>Norden</h3>
+        <ol class="mo-news" data-draw="news" data-region="Norden" data-source="nyheder"></ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="mo-sources" id="kilder">
+    Kilder: Energi Data Service (Energinet) for danske spotpriser, nettariffer og afgifter; hvakosterstrommen.no, elprisetjustnu.se og Elering for norske, svenske og finske spotpriser (ENTSO-E-data); Strømligning og selskabernes egne sider for elselskabernes priser. Spotpriser og tariffer opdateres automatisk hver hverdag; nyheder hver hverdag morgen.
+  </footer>
+  <details class="mo-sources" id="datakilder">
+    <summary>Datakilder og opdateringsdatoer</summary>
+    <ul id="kildeliste"></ul>
+  </details>
+</div>
+
+<script>
+(() => {
+  const L = d3.formatLocale({ decimal: ',', thousands: '.', grouping: [3], currency: ['', ' kr.'] });
+  const f0 = L.format(',.0f'), f1 = L.format(',.1f'), f2 = L.format(',.2f');
+  const N = (v) => (v === '' || v == null || isNaN(Number(v))) ? null : Number(v);
+  const sgn = (v, f) => (v > 0 ? '+' : v < 0 ? '-' : '') + f(Math.abs(v));
+  const FMT = {
+    pct0s: (v) => sgn(v, f0) + ' %',
+    pct1s: (v) => sgn(v, f1) + ' %',
+    pct0: (v) => f0(v) + ' %',
+    pct1: (v) => f1(v) + ' %',
+    pct2: (v) => f2(v) + ' %',
+    kr0: (v) => f0(v) + ' kr.',
+    mio: (v) => f0(v) + ' mio. kr.',
+    mia1: (v) => f1(v) + ' mia. kr.',
+    idx1: (v) => f1(v),
+    num0: (v) => f0(v),
+  };
+  const MONTHS = ['jan.', 'feb.', 'mar.', 'apr.', 'maj', 'jun.', 'jul.', 'aug.', 'sep.', 'okt.', 'nov.', 'dec.'];
+  const fmtDate = (s) => {
+    const p = String(s).split('-');
+    if (p.length === 3) return `${+p[2]}. ${MONTHS[+p[1] - 1]} ${p[0]}`;
+    if (p.length === 2) return `${MONTHS[+p[1] - 1]} ${p[0]}`;
+    return String(s);
+  };
+  const COL = (i) => dash.colors[i % dash.colors.length];
+
+  // ----- helpers -----
+  const state = (el, id) => {
+    const d = dash.data(id);
+    el.classList.toggle('dash-skeleton', d.status === 'loading');
+    if (d.status === 'ok') return d.data;
+    el.replaceChildren();
+    if (d.status === 'error' || d.status === 'connect' || d.status === 'declined' || d.status === 'missing') {
+      const m = document.createElement('div'); m.className = 'mo-fail';
+      const dot = document.createElement('i'); const t = document.createElement('span'); t.textContent = 'Kunne ikke indlæses';
+      m.append(dot, t); el.append(m);
+    }
+    return null;
+  };
+
+  const tipBox = (el) => {
+    const t = document.createElement('div'); t.className = 'mo-tip'; t.hidden = true; el.append(t); return t;
+  };
+  const fillTip = (tip, head, lines) => {
+    tip.replaceChildren();
+    const h = document.createElement('div'); h.className = 'mo-tip-head'; h.textContent = head; tip.append(h);
+    lines.forEach((l) => {
+      const r = document.createElement('div'); r.className = 'mo-tip-row';
+      if (l.color) { const s = document.createElement('span'); s.className = 'mo-sw'; s.style.background = l.color; r.append(s); }
+      const n = document.createElement('span'); n.textContent = l.label ? `${l.label}: ${l.value}` : l.value; r.append(n);
+      tip.append(r);
+    });
+    tip.hidden = false;
+  };
+  const placeTip = (el, tip, x, y) => {
+    const W = el.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
+    let left = x + 14; if (left + tw > W) left = Math.max(0, x - tw - 14);
+    let top = Math.max(0, Math.min(y - th / 2, el.clientHeight - th));
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  const measure = (svg, texts) => {
+    const g = svg.append('g');
+    const w = d3.max(texts, (t) => g.append('text').attr('font-size', 11).text(t).node().getComputedTextLength()) || 0;
+    g.remove(); return w;
+  };
+
+  function lineChart(el, rows, xKey, series, o = {}) {
+    el.replaceChildren();
+    const W = Math.max(260, el.clientWidth), H = o.h || 260;
+    const fmt = o.fmt || FMT.pct0s, tickFmt = o.tickFmt || fmt;
+    const xs = rows.map((r) => String(r[xKey]));
+    const xLab = o.xFmt || ((s) => s);
+    series.forEach((s, i) => { s.c = s.color || COL(i); });
+    const vals = [];
+    series.forEach((s) => rows.forEach((r) => { const v = N(r[s.key]); if (v != null) vals.push(v); }));
+    let lo = d3.min(vals), hi = d3.max(vals);
+    if (o.zero) { lo = Math.min(0, lo); hi = Math.max(0, hi); }
+    const pad = (hi - lo) * 0.1 || 1;
+    const y = d3.scaleLinear([lo - (o.zero && lo === 0 ? 0 : pad), hi + (o.zero && hi === 0 ? 0 : pad)], [H - 26, 10]).nice(5);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.label || '');
+    const ticks = y.ticks(5);
+    const left = measure(svg, ticks.map(tickFmt)) + 10;
+    const lastOf = (s) => { for (let i = rows.length - 1; i >= 0; i--) { const v = N(rows[i][s.key]); if (v != null) return { i, v }; } return null; };
+    const endTxt = series.map((s) => { const l = lastOf(s); return l ? `${s.label} ${fmt(l.v)}` : s.label; });
+    let right = measure(svg, endTxt) + 14;
+    const useEnd = right < W * 0.38;
+    if (!useEnd) right = 14;
+    const x = d3.scalePoint(xs, [left, W - right]).padding(0.15);
+
+    svg.append('g').selectAll('line').data(ticks).join('line')
+      .attr('x1', left).attr('x2', W - right).attr('y1', (d) => y(d)).attr('y2', (d) => y(d))
+      .attr('stroke', (d) => d === 0 ? 'var(--cds-chart-reference)' : 'var(--cds-chart-grid)').attr('stroke-width', 1);
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', left - 8).attr('y', (d) => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 11).text(tickFmt);
+    const step = Math.max(1, Math.ceil(xs.length * 64 / Math.max(1, W - left - right)));
+    svg.append('g').selectAll('text').data(xs.filter((_, i) => i % step === 0 || i === xs.length - 1)).join('text')
+      .attr('x', (d) => x(d)).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).text(xLab);
+
+    const line = (s) => d3.line().defined((r) => N(r[s.key]) != null).x((r) => x(String(r[xKey]))).y((r) => y(N(r[s.key])));
+    series.forEach((s) => {
+      svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', s.c).attr('stroke-width', 2)
+        .attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line(s));
+      svg.append('g').selectAll('circle').data(rows.filter((r) => N(r[s.key]) != null)).join('circle')
+        .attr('cx', (r) => x(String(r[xKey]))).attr('cy', (r) => y(N(r[s.key]))).attr('r', 3).attr('fill', s.c);
+    });
+
+    if (useEnd) {
+      const labs = series.map((s, i) => { const l = lastOf(s); return l ? { s, t: endTxt[i], x: x(xs[l.i]), y: y(l.v) } : null; }).filter(Boolean)
+        .sort((a, b) => a.y - b.y);
+      for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < 13) labs[i].y = labs[i - 1].y + 13;
+      const over = labs.length ? labs[labs.length - 1].y - (H - 30) : 0;
+      if (over > 0) labs.forEach((l) => { l.y -= over; });
+      svg.append('g').selectAll('text').data(labs).join('text')
+        .attr('x', W - right + 8).attr('y', (d) => d.y).attr('dy', '0.32em').attr('font-size', 11)
+        .style('fill', (d) => d.s.c).text((d) => d.t);
+    } else {
+      const lg = document.createElement('div'); lg.className = 'mo-legend';
+      series.forEach((s) => { const sp = document.createElement('span'); const sw = document.createElement('i'); sw.className = 'mo-sw'; sw.style.background = s.c; sp.append(sw, document.createTextNode(s.label)); lg.append(sp); });
+      el.append(lg);
+    }
+
+    const tip = tipBox(el);
+    const rule = svg.append('line').attr('y1', 10).attr('y2', H - 26).attr('stroke', 'var(--cds-chart-axis)').attr('stroke-width', 1).style('opacity', 0);
+    svg.append('rect').attr('x', left).attr('y', 0).attr('width', Math.max(1, W - left - right)).attr('height', H - 20).attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [mx, my] = d3.pointer(ev);
+        let bi = 0, bd = Infinity; xs.forEach((k, i) => { const d = Math.abs(x(k) - mx); if (d < bd) { bd = d; bi = i; } });
+        const px = x(xs[bi]); rule.attr('x1', px).attr('x2', px).style('opacity', 1);
+        fillTip(tip, xLab(xs[bi]), series.map((s) => { const v = N(rows[bi][s.key]); return { color: series.length > 1 ? s.c : null, label: series.length > 1 ? s.label : '', value: v == null ? 'ikke opgjort' : fmt(v) }; }));
+        placeTip(el, tip, px, my);
+      })
+      .on('pointerleave', () => { tip.hidden = true; rule.style('opacity', 0); });
+  }
+
+  function barH(el, rows, labKey, valKey, o = {}) {
+    el.replaceChildren();
+    const W = Math.max(260, el.clientWidth), rh = 26, H = rows.length * rh + 8;
+    const fmt = o.fmt || FMT.pct0s, labF = o.labFmt || ((s) => s);
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', o.label || '');
+    const left = measure(svg, rows.map((r) => labF(r[labKey]))) + 12;
+    const vw = measure(svg, rows.map((r) => fmt(N(r[valKey])))) + 8;
+    const vs = rows.map((r) => N(r[valKey]));
+    const lo = Math.min(0, d3.min(vs)), hi = Math.max(0, d3.max(vs));
+    const x = d3.scaleLinear([lo, hi], [left + (lo < 0 ? vw : 0), W - (hi > 0 ? vw : 4)]);
+    const yb = d3.scaleBand(rows.map((r) => String(r[labKey])), [4, H - 4]).padding(0.25);
+    const color = (r) => o.hl ? (o.hl(r) ? COL(0) : 'var(--cds-chart-muted)') : COL(0);
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', left - 8).attr('y', (r) => yb(String(r[labKey])) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 11)
+      .text((r) => labF(r[labKey]));
+    const tip = tipBox(el);
+    svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (r) => Math.min(x(0), x(N(r[valKey])))).attr('width', (r) => Math.max(1, Math.abs(x(N(r[valKey])) - x(0))))
+      .attr('y', (r) => yb(String(r[labKey]))).attr('height', yb.bandwidth()).attr('rx', 3).style('fill', color)
+      .on('pointermove', (ev, r) => { const [mx, my] = d3.pointer(ev, el); fillTip(tip, labF(r[labKey]), [{ value: fmt(N(r[valKey])) }]); placeTip(el, tip, mx, my); })
+      .on('pointerleave', () => { tip.hidden = true; });
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', (r) => { const v = N(r[valKey]); return v < 0 ? x(v) - 6 : x(v) + 6; })
+      .attr('text-anchor', (r) => N(r[valKey]) < 0 ? 'end' : 'start')
+      .attr('y', (r) => yb(String(r[labKey])) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('font-size', 11).style('fill', 'var(--color-fg)')
+      .text((r) => fmt(N(r[valKey])));
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', H).attr('stroke', 'var(--cds-chart-axis)');
+  }
+
+  const cell = (tr, text, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.append(td); return td; };
+  const dash_ = (v, f) => v == null ? '–' : f(v);
+
+
+
+  // ----- tabs -----
+  const tabs = [...document.querySelectorAll('.mo-tab')];
+  const show = (name) => {
+    document.querySelectorAll('.mo-page').forEach((s) => { s.hidden = s.id !== name; });
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.page === name)));
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.page); dash.setLink(t.dataset.page); }));
+  const hash = decodeURIComponent(location.hash.slice(1));
+  const target = hash && document.getElementById(hash);
+  if (target) {
+    const page = target.closest('.mo-page');
+    if (page) show(page.id);
+    requestAnimationFrame(() => target.scrollIntoView());
+  }
+
+  // ----- dates and data helpers -----
+  const P = () => dash.params();
+  const todayStr = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Copenhagen' }).format(new Date());
+  const addDays = (s, n) => { const d = new Date(s + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+  const WD = ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'];
+  const dayName = (s) => WD[new Date(s + 'T12:00:00Z').getUTCDay()];
+  const shortDate = (s) => { const p = s.split('-'); return `${+p[2]}/${+p[1]}`; };
+  const rows = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
+  const areaInfo = () => new Map((rows('omraader') || []).map((r) => [r.omraade, r]));
+  const AREAS = ['DK1', 'DK2', 'NO1', 'NO2', 'NO3', 'NO4', 'NO5', 'SE1', 'SE2', 'SE3', 'SE4', 'FI'];
+  const LAND = { DK1: 'Danmark', DK2: 'Danmark', NO1: 'Norge', NO2: 'Norge', NO3: 'Norge', NO4: 'Norge', NO5: 'Norge', SE1: 'Sverige', SE2: 'Sverige', SE3: 'Sverige', SE4: 'Sverige', FI: 'Finland' };
+  const areasFor = (land) => AREAS.filter((a) => land === 'Alle' || !land || LAND[a] === land);
+
+  // "I dag" = seneste dato med data, der ikke ligger efter dags dato
+  const dayRef = () => {
+    const d = rows('spot_daglig'); if (!d || !d.length) return null;
+    const dates = [...new Set(d.map((r) => r.dato))].sort();
+    const idag = [...dates].reverse().find((x) => x <= todayStr) || dates[dates.length - 1];
+    const imorgen = dates.includes(addDays(idag, 1)) ? addDays(idag, 1) : null;
+    return { idag, imorgen, dates };
+  };
+  const dayVal = (area, date) => {
+    const r = (rows('spot_daglig') || []).find((x) => x.omraade === area && x.dato === date);
+    return r ? N(r.gns_oere_kwh) : null;
+  };
+  const avgLast = (area, days) => {
+    const ref = dayRef(); if (!ref) return null;
+    const from = addDays(ref.idag, -days + 1);
+    const v = (rows('spot_daglig') || []).filter((x) => x.omraade === area && x.dato >= from && x.dato <= ref.idag).map((x) => N(x.gns_oere_kwh)).filter((x) => x != null);
+    return v.length ? d3.mean(v) : null;
+  };
+
+  // ----- controls -----
+  const ctl = (sel, ev, fn) => document.querySelectorAll(sel).forEach((el) => el.addEventListener(ev, () => fn(el)));
+  ctl('.mo-p-land', 'change', (el) => dash.setParams({ land: el.value }));
+  ctl('.mo-p-periode', 'change', (el) => dash.setParams({ periode: el.value }));
+  ctl('.mo-p-dkarea', 'change', (el) => dash.setParams({ dkarea: el.value }));
+  ctl('.mo-p-forbrug', 'input', (el) => { const v = Number(el.value); if (isFinite(v) && v >= 0) dash.setParams({ forbrug: v }); });
+  dash.onData(() => {
+    const p = P();
+    const setVal = (sel, v) => document.querySelectorAll(sel).forEach((el) => { if (el !== document.activeElement && v != null) el.value = String(v); });
+    setVal('.mo-p-land', p.land || 'Danmark'); setVal('.mo-p-periode', p.periode || '90');
+    setVal('.mo-p-dkarea', p.dkarea || 'DK1'); setVal('.mo-p-forbrug', p.forbrug ?? 4000);
+  });
+
+  // ----- header and tiles -----
+  dash.draw('dagtxt', (el) => {
+    if (el.dataset.which === 'time') { const d = hourDay(); el.textContent = d ? `${dayName(d)} ${fmtDate(d)}` : '—'; return; }
+    const ref = dayRef(); el.textContent = ref ? `${dayName(ref.idag)} ${fmtDate(ref.idag)}` : '—';
+  });
+  dash.draw('spotval', (el) => {
+    const ref = dayRef(); const unit = el.dataset.unit || '';
+    if (!ref) { el.textContent = '—'; return; }
+    const d = el.dataset.which === 'imorgen' ? ref.imorgen : ref.idag;
+    const v = d ? dayVal(el.dataset.area, d) : null;
+    el.textContent = v == null ? (el.dataset.which === 'imorgen' ? 'kommer kl. ca. 13' : '—') : f1(v) + unit;
+  });
+  dash.draw('spotavg', (el) => { const v = avgLast(el.dataset.area, Number(el.dataset.days)); el.textContent = v == null ? '—' : f1(v) + (el.dataset.unit || ''); });
+  dash.draw('ext', (el) => {
+    const ref = dayRef(); if (!ref) { el.textContent = '—'; return; }
+    const info = areaInfo();
+    const vals = AREAS.map((a) => ({ a, v: dayVal(a, ref.idag) })).filter((x) => x.v != null);
+    if (!vals.length) { el.textContent = '—'; return; }
+    const pick = el.dataset.kind === 'min' ? d3.least(vals, (x) => x.v) : d3.greatest(vals, (x) => x.v);
+    const nm = info.get(pick.a);
+    el.textContent = `${pick.a}${nm ? ' ' + nm.navn : ''} (${f1(pick.v)} øre)`;
+  });
+
+  // ----- overview charts -----
+  dash.draw('ch_areas', (el) => {
+    const d = state(el, 'spot_daglig'); if (!d) return;
+    const ref = dayRef(); const info = areaInfo();
+    const data = AREAS.map((a) => ({ lab: `${a} ${info.get(a)?.navn || ''}`.trim(), a, v: dayVal(a, ref.idag) })).filter((x) => x.v != null);
+    if (!data.length) { el.replaceChildren(); return; }
+    barH(el, data, 'lab', 'v', { fmt: (v) => f1(v) + ' øre', hl: (r) => LAND[r.a] === 'Danmark', label: 'Gennemsnitspris pr. prisområde' });
+  });
+  const seriesRows = (areas, days) => {
+    const ref = dayRef(); const d = rows('spot_daglig') || [];
+    if (!ref) return [];
+    const from = addDays(ref.idag, -days + 1);
+    const last = ref.imorgen || ref.idag;
+    const by = new Map();
+    d.forEach((r) => {
+      if (r.dato < from || r.dato > last || !areas.includes(r.omraade)) return;
+      if (!by.has(r.dato)) by.set(r.dato, { dato: r.dato });
+      by.get(r.dato)[r.omraade] = r.gns_oere_kwh;
+    });
+    return [...by.values()].sort((a, b) => a.dato.localeCompare(b.dato));
+  };
+  dash.draw('ch_countries', (el) => {
+    const d = state(el, 'spot_daglig'); if (!d) return;
+    const areas = ['DK1', 'NO1', 'SE3', 'FI'];
+    const data = seriesRows(areas, 30); if (!data.length) { el.replaceChildren(); return; }
+    lineChart(el, data, 'dato', areas.map((a) => ({ key: a, label: a })), { fmt: (v) => f1(v) + ' øre', tickFmt: f0, xFmt: shortDate, label: 'Døgnpriser seneste 30 dage' });
+  });
+
+  // ----- prices tab -----
+  dash.draw('area_body', (tb) => {
+    tb.replaceChildren();
+    const ref = dayRef(); if (!ref) return;
+    const info = areaInfo(); const d = rows('spot_daglig') || [];
+    const from30 = addDays(ref.idag, -29);
+    areasFor(P().land || 'Danmark').forEach((a) => {
+      const tr = document.createElement('tr');
+      cell(tr, a); cell(tr, info.get(a)?.navn || '', 'mo-hide-narrow');
+      cell(tr, dash_(dayVal(a, ref.idag), f1), 'num');
+      cell(tr, ref.imorgen ? dash_(dayVal(a, ref.imorgen), f1) : '–', 'num');
+      [7, 30, 365].forEach((n) => cell(tr, dash_(avgLast(a, n), f1), 'num'));
+      const neg = d.filter((x) => x.omraade === a && x.dato >= from30 && x.dato <= ref.idag).reduce((s, x) => s + (N(x.negative_timer) || 0), 0);
+      cell(tr, f0(neg), 'num mo-hide-narrow');
+      tb.append(tr);
+    });
+  });
+  dash.draw('ch_daily', (el) => {
+    const d = state(el, 'spot_daglig'); if (!d) return;
+    const areas = areasFor(P().land || 'Danmark');
+    const data = seriesRows(areas, Number(P().periode || 90)); if (!data.length) { el.replaceChildren(); return; }
+    lineChart(el, data, 'dato', areas.map((a) => ({ key: a, label: a })), { h: 320, fmt: (v) => f1(v) + ' øre', tickFmt: f0, xFmt: shortDate, label: 'Døgnpris pr. område' });
+  });
+  const hourDays = () => [...new Set((rows('spot_time') || []).map((r) => r.dato))].sort();
+  const hourDay = () => {
+    const ds = hourDays(); if (!ds.length) return null;
+    const want = P().dag;
+    if (want && ds.includes(want)) return want;
+    return [...ds].reverse().find((x) => x <= todayStr) || ds[ds.length - 1];
+  };
+  dash.draw('dag_sel', (sel) => {
+    const ds = hourDays();
+    sel.replaceChildren(...ds.map((d) => new Option(`${dayName(d)} ${fmtDate(d)}${d === todayStr ? ' (i dag)' : d === addDays(todayStr, 1) ? ' (i morgen)' : ''}`, d)));
+    const cur = hourDay(); if (cur) sel.value = cur;
+    sel.onchange = () => dash.setParams({ dag: sel.value });
+  });
+  dash.draw('ch_hourly', (el) => {
+    const d = state(el, 'spot_time'); if (!d) return;
+    const day = hourDay(); const areas = areasFor(P().land || 'Danmark');
+    const by = new Map();
+    d.forEach((r) => {
+      if (r.dato !== day || !areas.includes(r.omraade)) return;
+      const k = String(r.time).padStart(2, '0');
+      if (!by.has(k)) by.set(k, { time: k });
+      by.get(k)[r.omraade] = r.oere_kwh;
+    });
+    const data = [...by.values()].sort((a, b) => a.time.localeCompare(b.time));
+    if (!data.length) { el.replaceChildren(); return; }
+    lineChart(el, data, 'time', areas.map((a) => ({ key: a, label: a })), { fmt: (v) => f1(v) + ' øre', tickFmt: f0, xFmt: (s) => `kl. ${s}`, zero: true, label: 'Timepriser' });
+  });
+  dash.draw('month_table', (tbl) => {
+    tbl.replaceChildren();
+    const d = rows('spot_maaned'); if (!d) return;
+    const areas = areasFor(P().land || 'Danmark');
+    const months = [...new Set(d.map((r) => r.maaned))].sort().slice(-13).reverse();
+    const thead = document.createElement('thead'); const hr = document.createElement('tr');
+    ['Måned', ...areas].forEach((h, i) => { const th = document.createElement('th'); th.textContent = h; if (i) th.className = 'num'; hr.append(th); });
+    thead.append(hr); tbl.append(thead);
+    const tb = document.createElement('tbody');
+    months.forEach((m) => {
+      const tr = document.createElement('tr'); cell(tr, fmtDate(m));
+      areas.forEach((a) => { const r = d.find((x) => x.maaned === m && x.omraade === a); cell(tr, r ? f1(N(r.gns_oere_kwh)) : '–', 'num'); });
+      tb.append(tr);
+    });
+    tbl.append(tb);
+  });
+
+  // ----- fees and tariffs tab -----
+  const netRows = () => rows('nettariffer') || [];
+  const curNet = () => { const n = netRows(); return n.find((r) => r.netselskab === P().netselskab) || n.find((r) => /radius/i.test(r.netselskab)) || n[0] || null; };
+  const supRows = () => rows('elselskaber') || [];
+  const curSup = () => { const s = supRows(); return s.find((r) => r.id === P().elselskab) || s[0] || null; };
+  dash.draw('net_sel', (sel) => {
+    const n = [...netRows()].sort((a, b) => a.netselskab.localeCompare(b.netselskab, 'da'));
+    sel.replaceChildren(...n.map((r) => new Option(r.netselskab, r.netselskab)));
+    const c = curNet(); if (c) sel.value = c.netselskab;
+    sel.onchange = () => dash.setParams({ netselskab: sel.value });
+  });
+  dash.draw('sup_sel', (sel) => {
+    sel.replaceChildren(...supRows().map((r) => new Option(`${r.selskab} – ${r.produkt}`, r.id)));
+    const c = curSup(); if (c) sel.value = c.id;
+    sel.onchange = () => dash.setParams({ elselskab: sel.value });
+  });
+  const PERIODS = [{ key: 'lav', label: 'Lavlast kl. 00–06', hours: [0, 1, 2, 3, 4, 5] },
+    { key: 'hoej', label: 'Højlast kl. 06–17 og 21–24', hours: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23] },
+    { key: 'spids', label: 'Spidslast kl. 17–21', hours: [17, 18, 19, 20] }];
+  const COMP = [{ key: 'spot', label: 'Spotpris' }, { key: 'tillaeg', label: 'Elselskabets tillæg' }, { key: 'net', label: 'Nettarif' },
+    { key: 'energinet', label: 'Energinet' }, { key: 'afgift', label: 'Elafgift' }, { key: 'moms', label: 'Moms' }];
+  const stackData = () => {
+    const t = rows('spot_time'), afg = rows('afgifter'), net = curNet(), sup = curSup();
+    if (!t || !afg || !net) return null;
+    const day = hourDay(); const area = P().dkarea || 'DK1';
+    const spotH = new Map(t.filter((r) => r.dato === day && r.omraade === area).map((r) => [Number(r.time), N(r.oere_kwh)]));
+    const a = (id) => { const r = afg.find((x) => x.id === id); return r ? N(r.kr_kwh) * 100 : 0; };
+    const energinet = a('nettarif') + a('systemtarif'), afgift = a('elafgift');
+    const tillaeg = sup ? N(sup.spottillaeg_oere_kwh) / 1.25 : 0;
+    return PERIODS.map((p) => {
+      const sp = d3.mean(p.hours.map((h) => spotH.get(h)).filter((v) => v != null));
+      const nt = d3.mean(p.hours.map((h) => N(net['t' + String(h).padStart(2, '0')]) * 100));
+      const ex = { spot: sp ?? 0, tillaeg, net: nt ?? 0, energinet, afgift };
+      const sum = Object.values(ex).reduce((s, v) => s + v, 0);
+      return { label: p.label, ...ex, moms: sum * 0.25, total: sum * 1.25, spotOk: sp != null };
+    });
+  };
+  dash.draw('ch_stack', (el) => {
+    el.replaceChildren();
+    const data = stackData(); if (!data) return;
+    const W = Math.max(280, el.clientWidth), rh = 34, H = data.length * rh + 30;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Prisens sammensætning');
+    const left = measure(svg, data.map((d) => d.label)) + 12;
+    const totW = measure(svg, data.map((d) => f1(d.total) + ' øre')) + 10;
+    const x = d3.scaleLinear([0, d3.max(data, (d) => d.total) || 1], [left, W - totW]);
+    const yb = d3.scaleBand(data.map((d) => d.label), [4, H - 26]).padding(0.25);
+    const tip = tipBox(el);
+    data.forEach((d) => {
+      let acc = 0;
+      COMP.forEach((c, i) => {
+        const v = Math.max(0, d[c.key]);
+        svg.append('rect').attr('x', x(acc)).attr('width', Math.max(0, x(acc + v) - x(acc))).attr('y', yb(d.label)).attr('height', yb.bandwidth())
+          .style('fill', COL(i))
+          .on('pointermove', (ev) => { const [mx, my] = d3.pointer(ev, el); fillTip(tip, d.label, COMP.map((cc, j) => ({ color: COL(j), label: cc.label, value: f1(d[cc.key]) + ' øre' })).concat([{ label: 'I alt', value: f1(d.total) + ' øre' }])); placeTip(el, tip, mx, my); })
+          .on('pointerleave', () => { tip.hidden = true; });
+        acc += v;
+      });
+      svg.append('text').attr('x', left - 8).attr('y', yb(d.label) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').attr('font-size', 11).text(d.label);
+      svg.append('text').attr('x', x(acc) + 6).attr('y', yb(d.label) + yb.bandwidth() / 2).attr('dy', '0.32em').attr('font-size', 11).style('fill', 'var(--color-fg)').text(f1(d.total) + ' øre');
+    });
+    const ticks = x.ticks(5);
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('x', (v) => x(v)).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).text(f0);
+  });
+  dash.draw('stack_legend', (el) => {
+    el.replaceChildren();
+    COMP.forEach((c, i) => { const sp = document.createElement('span'); const sw = document.createElement('i'); sw.className = 'mo-sw'; sw.style.background = COL(i); sp.append(sw, document.createTextNode(c.label)); el.append(sp); });
+  });
+  dash.draw('afg_body', (tb) => {
+    tb.replaceChildren();
+    (rows('afgifter') || []).forEach((r) => {
+      const tr = document.createElement('tr'); const v = N(r.kr_kwh) * 100;
+      cell(tr, r.navn); cell(tr, f2(v), 'num'); cell(tr, f2(v * 1.25), 'num'); cell(tr, r.gyldig_fra ? fmtDate(r.gyldig_fra) : '');
+      tb.append(tr);
+    });
+  });
+
+  // sortable tables
+  const sortState = { net: { key: 'spids', dir: -1 }, sup: { key: 'aar', dir: 1 } };
+  document.querySelectorAll('.mo-sortable').forEach((tbl) => {
+    const name = tbl.dataset.table;
+    tbl.querySelectorAll('th[data-sort] button').forEach((b) => b.addEventListener('click', () => {
+      const k = b.parentElement.dataset.sort; const s = sortState[name];
+      if (s.key === k) s.dir = -s.dir; else { s.key = k; s.dir = typeof k === 'string' && ['netselskab', 'selskab', 'produkt', 'binding', 'fra'].includes(k) ? 1 : -1; }
+      tbl.querySelectorAll('th[data-sort]').forEach((th) => { if (th.dataset.sort === s.key) th.setAttribute('aria-sort', s.dir > 0 ? 'ascending' : 'descending'); else th.removeAttribute('aria-sort'); });
+      dash.draw(name === 'net' ? 'net_body' : 'sup_body');
+    }));
+  });
+  const sorter = (s) => (a, b) => {
+    const va = a[s.key], vb = b[s.key];
+    if (typeof va === 'number' || typeof vb === 'number') {
+      if (va == null) return 1; if (vb == null) return -1; return (va - vb) * s.dir;
+    }
+    return String(va ?? '').localeCompare(String(vb ?? ''), 'da') * s.dir;
+  };
+  dash.draw('net_body', (tb) => {
+    tb.replaceChildren();
+    const list = netRows().map((r) => ({ r, netselskab: r.netselskab, lav: N(r.lavlast_kr) * 125, hoej: N(r.hoejlast_kr) * 125, spids: N(r.spidslast_kr) * 125, abo: N(r.abonnement_kr_md) == null ? null : N(r.abonnement_kr_md) * 1.25, fra: r.gyldig_fra }));
+    const sel = curNet();
+    list.sort(sorter(sortState.net)).forEach((x) => {
+      const tr = document.createElement('tr'); if (sel && x.r === sel) tr.className = 'mo-top';
+      cell(tr, x.netselskab); cell(tr, f2(x.lav), 'num'); cell(tr, f2(x.hoej), 'num'); cell(tr, f2(x.spids), 'num');
+      cell(tr, dash_(x.abo, f2), 'num mo-hide-narrow'); cell(tr, x.fra ? fmtDate(x.fra) : '', 'mo-hide-narrow'); cell(tr, x.r.tarif, 'mo-hide-narrow');
+      tb.append(tr);
+    });
+  });
+
+  // ----- suppliers tab -----
+  const forbrug = () => { const v = Number(P().forbrug ?? 4000); return isFinite(v) && v >= 0 ? v : 4000; };
+  // Abonnement efter forbrugstrin ("kWh:kr;…") og ekstra tillæg over en grænse ("kWh:øre")
+  const aboFor = (r, kwh) => {
+    const trin = (r.abonnement_trin || '').split(';').filter(Boolean).map((t) => t.split(':').map(Number));
+    if (!trin.length) return N(r.abonnement_kr_md) || 0;
+    const hit = trin.find(([lim]) => kwh <= lim);
+    return hit ? hit[1] : trin[trin.length - 1][1];
+  };
+  const annual = (r) => {
+    const kwh = forbrug();
+    const till = N(r.spottillaeg_oere_kwh) || 0;
+    const [over, extra] = (r.ekstra_tillaeg || '').split(':').map(Number);
+    const extraCost = over && extra && kwh > over ? (kwh - over) * extra / 100 : 0;
+    const bs = N(r.betalingsservice_kr) || 0, per = r.betalingsservice_periode === 'kvt' ? 4 : 12;
+    return aboFor(r, kwh) * 12 + till * kwh / 100 + extraCost + bs * per;
+  };
+  dash.draw('forbrug_txt', (el) => { el.textContent = f0(forbrug()); });
+  dash.draw('ch_suppliers', (el) => {
+    const d = state(el, 'elselskaber'); if (!d) return;
+    const data = d.map((r) => ({ lab: `${r.selskab} · ${r.produkt}`, v: annual(r) })).sort((a, b) => a.v - b.v);
+    barH(el, data, 'lab', 'v', { fmt: (v) => f0(v) + ' kr.', label: 'Elselskabets del af regningen pr. år' });
+  });
+  dash.draw('sup_body', (tb) => {
+    tb.replaceChildren();
+    const list = supRows().map((r) => ({ r, selskab: r.selskab, produkt: r.produkt, abo: aboFor(r, forbrug()), tillaeg: N(r.spottillaeg_oere_kwh), aar: annual(r), binding: r.binding, bs: N(r.betalingsservice_kr), ik: N(r.indbetalingskort_kr) }));
+    list.sort(sorter(sortState.sup)).forEach((x) => {
+      const r = x.r; const tr = document.createElement('tr');
+      cell(tr, x.selskab); cell(tr, x.produkt);
+      cell(tr, dash_(x.abo, f2), 'num'); cell(tr, dash_(x.tillaeg, f2), 'num'); cell(tr, f0(x.aar) + ' kr.', 'num');
+      cell(tr, x.binding);
+      cell(tr, x.bs == null ? '–' : `${f2(x.bs)} kr./${r.betalingsservice_periode || 'md'}`, 'num mo-hide-narrow');
+      cell(tr, x.ik == null ? '–' : `${f2(x.ik)} kr./${r.indbetalingskort_periode || 'md'}`, 'num mo-hide-narrow');
+      cell(tr, [r.tillaeg_note, r.oevrige_gebyrer, r.afregning].filter(Boolean).join(' · '), 'mo-hide-narrow');
+      const td = document.createElement('td'); td.className = 'mo-hide-narrow';
+      if (/^https:\/\//.test(r.url)) { const a = document.createElement('a'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.kilde; td.append(a); } else td.textContent = r.kilde;
+      if (r.sidst_kontrolleret) td.append(document.createTextNode(` · kontrolleret ${fmtDate(r.sidst_kontrolleret)}`));
+      tr.append(td); tb.append(tr);
+    });
+  });
+
+  // ----- news -----
+  const newsDates = () => [...new Set((rows('nyheder') || []).map((r) => r.dato))].sort().reverse();
+  const newsDay = (useParam) => { const ds = newsDates(); const want = P().nyhedsdato; return useParam && want && ds.includes(want) ? want : ds[0]; };
+  dash.draw('news_sel', (sel) => {
+    sel.replaceChildren(...newsDates().map((d) => new Option(`${dayName(d)} ${fmtDate(d)}`, d)));
+    const c = newsDay(true); if (c) sel.value = c;
+    sel.onchange = () => dash.setParams({ nyhedsdato: sel.value });
+  });
+  dash.draw('newsdate', (el) => { const d = newsDay(false); el.textContent = d ? `Udvalgt ${dayName(d)} ${fmtDate(d)}` : '—'; });
+  dash.draw('news', (ol) => {
+    ol.replaceChildren();
+    const short = ol.dataset.short === '1';
+    const day = newsDay(!short);
+    (rows('nyheder') || []).filter((r) => r.dato === day && r.region === ol.dataset.region).sort((a, b) => Number(a.rang) - Number(b.rang)).forEach((r) => {
+      const li = document.createElement('li');
+      const h = document.createElement('div'); h.className = 'mo-news-title';
+      if (/^https:\/\//.test(r.url)) { const a = document.createElement('a'); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = r.titel; h.append(a); } else h.textContent = r.titel;
+      const meta = document.createElement('div'); meta.className = 'mo-news-meta'; meta.textContent = `${r.kilde} · ${fmtDate(r.publiceret)}`;
+      li.append(h, meta);
+      if (!short) {
+        const p = document.createElement('p'); p.textContent = r.resume;
+        const b = document.createElement('p'); b.className = 'mo-news-why'; const s = document.createElement('b'); s.textContent = 'Betydning: '; b.append(s, document.createTextNode(r.betydning));
+        li.append(p, b);
+      }
+      ol.append(li);
+    });
+  });
+})();
+
+</script>
+</main>
+</body>
+</html>

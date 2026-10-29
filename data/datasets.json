@@ -1,0 +1,77 @@
+{
+  "datasets": {
+    "nyheder": {
+      "titel": "Top 5 energinyheder",
+      "beskrivelse": "Dagens fem mest interessante energinyheder i Danmark og i Norden, udvalgt og opsummeret hver hverdag af Claude med link til kilden.",
+      "fil": "data/nyheder.json",
+      "opdateret": "2026-10-29",
+      "af": "Claude",
+      "opdateres": "Hverdage kl. ca. 06:45"
+    },
+    "spot_daglig": {
+      "titel": "Spotpriser, døgngennemsnit",
+      "beskrivelse": "Døgngennemsnit, min. og maks. af day-ahead-prisen pr. prisområde (DK1, DK2, NO1–NO5, SE1–SE4, FI) i øre/kWh ekskl. moms og EUR/MWh, seneste ca. 400 dage. Kilder: Energi Data Service (DK), hvakosterstrommen.no (NO), elprisetjustnu.se (SE) og Elering (FI); NO, SE og FI bygger på ENTSO-E-data.",
+      "fil": "data/spot_daglig.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage kl. ca. 13:45"
+    },
+    "spot_time": {
+      "titel": "Spotpriser, time for time",
+      "beskrivelse": "Timepriser (gennemsnit af kvarterpriser) for de seneste tre døgn med data, pr. prisområde.",
+      "fil": "data/spot_time.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage kl. ca. 13:45"
+    },
+    "spot_maaned": {
+      "titel": "Spotpriser, månedsstatistik",
+      "beskrivelse": "Månedligt gennemsnit, laveste og højeste døgnværdi pr. prisområde, beregnet af døgngennemsnittene.",
+      "fil": "data/spot_maaned.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage kl. ca. 13:45"
+    },
+    "nettariffer": {
+      "titel": "Nettariffer pr. netselskab",
+      "beskrivelse": "Gældende nettarif C (time) for hver dansk netvirksomhed, time for time i kr./kWh ekskl. moms, samt netabonnement, fra Energinets DatahubPricelist (Energi Data Service).",
+      "fil": "data/nettariffer.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage"
+    },
+    "afgifter": {
+      "titel": "Elafgift og Energinets tariffer",
+      "beskrivelse": "Gældende elafgift og Energinets transmissions- og systemtarif i kr./kWh ekskl. moms fra DatahubPricelist.",
+      "fil": "data/afgifter.csv",
+      "opdateret": "venter på første kørsel",
+      "af": "GitHub Action",
+      "opdateres": "Hverdage"
+    },
+    "elselskaber": {
+      "titel": "Elselskabernes priser og gebyrer",
+      "beskrivelse": "Abonnement, spottillæg, binding og betalingsgebyrer for hovedproduktet hos 15 af de største danske elselskaber (inkl. moms). Primært fra Strømligning (stromligning.dk), der kontrollerer data med selskaberne, suppleret med selskabernes egne sider.",
+      "fil": "data/elselskaber.csv",
+      "opdateret": "2026-10-29",
+      "af": "Claude",
+      "opdateres": "Ugentligt (mandag)"
+    },
+    "omraader": {
+      "titel": "Nordiske prisområder",
+      "beskrivelse": "Prisområderne i Norden med land og navn.",
+      "fil": "data/omraader.csv",
+      "opdateret": "2026-10-29",
+      "af": "Claude",
+      "opdateres": "Fast"
+    }
+  },
+  "params": {
+    "land": "Danmark",
+    "periode": "90",
+    "dag": "",
+    "netselskab": "Radius Elnet A/S",
+    "forbrug": 4000,
+    "nyhedsdato": "",
+    "dkarea": "DK1"
+  }
+}

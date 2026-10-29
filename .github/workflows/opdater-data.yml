@@ -1,0 +1,60 @@
+name: Opdater spotpriser og tariffer
+
+# Kører hver hverdag efter day-ahead-auktionen (resultater ca. kl. 12:45 CET),
+# så morgendagens priser er med. Kan også startes manuelt under fanen Actions.
+on:
+  schedule:
+    - cron: "47 12 * * 1-5"   # man–fre 12:47 UTC = 13:47 dansk vintertid / 14:47 sommertid
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: opdater-data
+  cancel-in-progress: false
+
+jobs:
+  opdater:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Hent spotpriser og tariffer
+        id: hent
+        run: python3 scripts/hent_data.py
+
+      - name: Kontrollér datafilerne
+        if: always() && steps.hent.outcome != 'cancelled'
+        id: tjek
+        run: python3 scripts/tjek_data.py
+
+      - name: Commit og push, hvis der er ændringer
+        if: always() && steps.tjek.outcome == 'success'
+        id: commit
+        run: |
+          if git diff --quiet -- data; then
+            echo "Ingen nye tal."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git commit -m "Opdater spotpriser og tariffer ($(TZ=Europe/Copenhagen date +%Y-%m-%d))"
+          git pull --rebase
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Genbyg GitHub Pages
+        if: steps.commit.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null && echo "Pages-build startet."
