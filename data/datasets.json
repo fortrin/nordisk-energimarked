@@ -12,7 +12,7 @@
       "titel": "Spotpriser, døgngennemsnit",
       "beskrivelse": "Døgngennemsnit, min. og maks. af day-ahead-prisen pr. prisområde (DK1, DK2, NO1–NO5, SE1–SE4, FI) i øre/kWh ekskl. moms og EUR/MWh, seneste ca. 400 dage. Kilder: Energi Data Service (DK), hvakosterstrommen.no (NO), elprisetjustnu.se (SE) og Elering (FI); NO, SE og FI bygger på ENTSO-E-data.",
       "fil": "data/spot_daglig.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-10-30",
       "af": "GitHub Action",
       "opdateres": "Hverdage kl. ca. 13:45"
     },
@@ -20,7 +20,7 @@
       "titel": "Spotpriser, time for time",
       "beskrivelse": "Timepriser (gennemsnit af kvarterpriser) for de seneste tre døgn med data, pr. prisområde.",
       "fil": "data/spot_time.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-10-30",
       "af": "GitHub Action",
       "opdateres": "Hverdage kl. ca. 13:45"
     },
@@ -28,7 +28,7 @@
       "titel": "Spotpriser, månedsstatistik",
       "beskrivelse": "Månedligt gennemsnit, laveste og højeste døgnværdi pr. prisområde, beregnet af døgngennemsnittene.",
       "fil": "data/spot_maaned.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-10-30",
       "af": "GitHub Action",
       "opdateres": "Hverdage kl. ca. 13:45"
     },
@@ -76,7 +76,7 @@
       "titel": "Profilvægtede spotpriser",
       "beskrivelse": "Månedlig spotpris i DK1 og DK2 vægtet efter typiske erhvervsprofiler (døgndrift, kontor, butik, industri i 1 og 2 skift) og profilfaktoren i forhold til den flade pris. Beregnet af kvarters- og timepriserne fra Energi Data Service.",
       "fil": "data/spot_profil_maaned.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-10-30",
       "af": "GitHub Action",
       "opdateres": "Hverdage"
     }
