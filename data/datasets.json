@@ -4,7 +4,7 @@
       "titel": "Top 5 energinyheder",
       "beskrivelse": "Dagens fem mest interessante energinyheder i Danmark og i Norden, udvalgt og opsummeret hver hverdag af Claude med link til kilden.",
       "fil": "data/nyheder.json",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-10-30",
       "af": "Claude",
       "opdateres": "Hverdage kl. ca. 06:45"
     },
