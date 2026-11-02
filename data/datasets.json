@@ -4,7 +4,7 @@
       "titel": "Top 5 energinyheder",
       "beskrivelse": "Dagens fem mest interessante energinyheder i Danmark og i Norden, udvalgt og opsummeret hver hverdag af Claude med link til kilden.",
       "fil": "data/nyheder.json",
-      "opdateret": "2026-10-30",
+      "opdateret": "2026-11-02",
       "af": "Claude",
       "opdateres": "Hverdage kl. ca. 06:45"
     },
@@ -52,7 +52,7 @@
       "titel": "Erhvervsprodukter hos elselskaberne",
       "beskrivelse": "Offentliggjorte erhvervsprodukter (spot, fast pris og prisloft) med abonnement, tillæg, fastpris, binding, forbrugsgrænse og gebyrer ekskl. moms, fra selskabernes egne erhvervssider. Større virksomheder får typisk individuelle tilbud.",
       "fil": "data/elselskaber.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-11-02",
       "af": "Claude, fra selskabernes erhvervssider",
       "opdateres": "Ugentligt (mandag)"
     },
@@ -68,7 +68,7 @@
       "titel": "Elselskaber med individuelle tilbud",
       "beskrivelse": "Selskaber og forbrugsgrænser, hvor erhvervspriser kun gives efter henvendelse.",
       "fil": "data/elselskaber_tilbud.csv",
-      "opdateret": "2026-10-29",
+      "opdateret": "2026-11-02",
       "af": "Claude",
       "opdateres": "Ugentligt (mandag)"
     },
