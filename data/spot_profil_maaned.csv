@@ -1,14 +1,14 @@
 maaned,omraade,profil,navn,oere_kwh,vaegt,profilfaktor,dage
-2025-10,DK1,flad,Døgndrift / flad,60.66,480.00,1.0000,20
-2025-10,DK1,kontor,Kontor,65.14,253.50,1.0739,20
-2025-10,DK1,butik,Butik,64.78,301.30,1.0680,20
-2025-10,DK1,industri1,"Industri, 1 skift",64.49,192.00,1.0632,20
-2025-10,DK1,industri2,"Industri, 2 skift",68.81,312.00,1.1344,20
-2025-10,DK2,flad,Døgndrift / flad,63.12,480.00,1.0000,20
-2025-10,DK2,kontor,Kontor,68.78,253.50,1.0897,20
-2025-10,DK2,butik,Butik,67.79,301.30,1.0741,20
-2025-10,DK2,industri1,"Industri, 1 skift",67.79,192.00,1.0741,20
-2025-10,DK2,industri2,"Industri, 2 skift",72.23,312.00,1.1445,20
+2025-10,DK1,flad,Døgndrift / flad,60.59,456.00,1.0000,19
+2025-10,DK1,kontor,Kontor,65.22,247.50,1.0764,19
+2025-10,DK1,butik,Butik,65.06,289.20,1.0738,19
+2025-10,DK1,industri1,"Industri, 1 skift",64.56,187.20,1.0656,19
+2025-10,DK1,industri2,"Industri, 2 skift",68.97,304.80,1.1384,19
+2025-10,DK2,flad,Døgndrift / flad,63.19,456.00,1.0000,19
+2025-10,DK2,kontor,Kontor,68.95,247.50,1.0911,19
+2025-10,DK2,butik,Butik,68.21,289.20,1.0794,19
+2025-10,DK2,industri1,"Industri, 1 skift",67.95,187.20,1.0753,19
+2025-10,DK2,industri2,"Industri, 2 skift",72.48,304.80,1.1471,19
 2025-11,DK1,flad,Døgndrift / flad,69.36,720.00,1.0000,30
 2025-11,DK1,kontor,Kontor,77.68,358.00,1.1200,30
 2025-11,DK1,butik,Butik,75.53,450.50,1.0889,30
@@ -129,13 +129,13 @@ maaned,omraade,profil,navn,oere_kwh,vaegt,profilfaktor,dage
 2026-10,DK2,butik,Butik,123.74,469.40,1.0156,31
 2026-10,DK2,industri1,"Industri, 1 skift",127.38,289.60,1.0455,31
 2026-10,DK2,industri2,"Industri, 2 skift",132.55,469.60,1.0879,31
-2026-11,DK1,flad,Døgndrift / flad,181.46,408.00,1.0000,17
-2026-11,DK1,kontor,Kontor,193.59,208.80,1.0668,17
-2026-11,DK1,butik,Butik,190.71,254.70,1.0510,17
-2026-11,DK1,industri1,"Industri, 1 skift",189.16,158.40,1.0424,17
-2026-11,DK1,industri2,"Industri, 2 skift",195.29,256.80,1.0762,17
-2026-11,DK2,flad,Døgndrift / flad,190.51,408.00,1.0000,17
-2026-11,DK2,kontor,Kontor,206.76,208.80,1.0853,17
-2026-11,DK2,butik,Butik,202.73,254.70,1.0642,17
-2026-11,DK2,industri1,"Industri, 1 skift",201.04,158.40,1.0553,17
-2026-11,DK2,industri2,"Industri, 2 skift",207.99,256.80,1.0918,17
+2026-11,DK1,flad,Døgndrift / flad,177.88,432.00,1.0000,18
+2026-11,DK1,kontor,Kontor,188.71,223.70,1.0609,18
+2026-11,DK1,butik,Butik,186.85,270.30,1.0504,18
+2026-11,DK1,industri1,"Industri, 1 skift",184.19,169.60,1.0355,18
+2026-11,DK1,industri2,"Industri, 2 skift",190.53,275.20,1.0711,18
+2026-11,DK2,flad,Døgndrift / flad,187.30,432.00,1.0000,18
+2026-11,DK2,kontor,Kontor,202.31,223.70,1.0801,18
+2026-11,DK2,butik,Butik,199.24,270.30,1.0638,18
+2026-11,DK2,industri1,"Industri, 1 skift",196.67,169.60,1.0500,18
+2026-11,DK2,industri2,"Industri, 2 skift",203.56,275.20,1.0868,18
